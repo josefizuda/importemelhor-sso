@@ -1,11 +1,11 @@
 <?php
 session_start();
 
-define('AZURE_CLIENT_ID', getenv('AZURE_CLIENT_ID') ?: 'ac66d4b8-04a0-4534-9e02-3a7a49778af8');
+define('AZURE_CLIENT_ID', getenv('AZURE_CLIENT_ID'));
 define('AZURE_CLIENT_SECRET', getenv('AZURE_CLIENT_SECRET'));
 define('AZURE_TENANT_ID', getenv('AZURE_TENANT_ID'));
-define('AZURE_REDIRECT_URI', getenv('AZURE_REDIRECT_URI') ?: 'https://auth.importemelhor.com.br/callback.php');
-define('BASE_URL', 'https://auth.importemelhor.com.br');
+define('AZURE_REDIRECT_URI', getenv('AZURE_REDIRECT_URI'));
+define('BASE_URL', getenv('APP_URL'));
 
 function redirectWithError($message) {
     header('Location: ' . BASE_URL . '/index.php?error=' . urlencode($message));
@@ -40,26 +40,24 @@ function makeRequest($url, $method = 'GET', $data = null, $headers = []) {
 }
 
 if (!AZURE_CLIENT_SECRET || !AZURE_TENANT_ID) {
-    redirectWithError('Configurações do Azure não definidas. Configure AZURE_CLIENT_SECRET e AZURE_TENANT_ID no Easypanel.');
+    redirectWithError('Configurações do Azure não definidas.');
 }
 
 if (isset($_GET['error'])) {
     $errorDescription = $_GET['error_description'] ?? 'Erro desconhecido';
-    redirectWithError('Erro na autenticação: ' . $errorDescription);
+    redirectWithError('Erro: ' . $errorDescription);
 }
 
 if (!isset($_GET['code'])) {
-    redirectWithError('Código de autorização não recebido');
+    redirectWithError('Código não recebido');
 }
-
-$authorizationCode = $_GET['code'];
 
 $tokenUrl = "https://login.microsoftonline.com/" . AZURE_TENANT_ID . "/oauth2/v2.0/token";
 
 $tokenData = [
     'client_id' => AZURE_CLIENT_ID,
     'client_secret' => AZURE_CLIENT_SECRET,
-    'code' => $authorizationCode,
+    'code' => $_GET['code'],
     'redirect_uri' => AZURE_REDIRECT_URI,
     'grant_type' => 'authorization_code',
     'scope' => 'openid profile email User.Read'
@@ -70,17 +68,16 @@ $response = makeRequest($tokenUrl, 'POST', http_build_query($tokenData), [
 ]);
 
 if ($response['code'] !== 200) {
-    error_log('Azure AD Token Error: ' . $response['body']);
-    redirectWithError('Erro ao obter token de acesso. Código: ' . $response['code']);
+    error_log('Azure Token Error: ' . $response['body']);
+    redirectWithError('Erro ao obter token. Verifique logs.');
 }
 
 $tokenResponse = json_decode($response['body'], true);
 
 if (!isset($tokenResponse['access_token'])) {
-    redirectWithError('Token de acesso não recebido');
+    redirectWithError('Token não recebido');
 }
 
-$accessToken = $tokenResponse['access_token'];
 $idToken = $tokenResponse['id_token'] ?? null;
 
 if ($idToken) {
@@ -93,17 +90,7 @@ if ($idToken) {
         $userId = $payload['oid'] ?? $payload['sub'] ?? null;
         
         if (!$userEmail) {
-            redirectWithError('Não foi possível obter o email do usuário');
-        }
-        
-        $graphResponse = makeRequest('https://graph.microsoft.com/v1.0/me', 'GET', null, [
-            'Authorization: Bearer ' . $accessToken
-        ]);
-        
-        if ($graphResponse['code'] === 200) {
-            $graphData = json_decode($graphResponse['body'], true);
-            $userEmail = $graphData['mail'] ?? $graphData['userPrincipalName'] ?? $userEmail;
-            $userName = $graphData['displayName'] ?? $userName;
+            redirectWithError('Email não encontrado');
         }
         
         $_SESSION['user_id'] = $userId;
@@ -112,14 +99,11 @@ if ($idToken) {
         $_SESSION['logged_in'] = true;
         $_SESSION['auth_method'] = 'microsoft_sso';
         
-        error_log("Login SSO bem-sucedido: {$userEmail}");
+        error_log("Login SSO: {$userEmail}");
         
         header('Location: ' . BASE_URL . '/dashboard.php');
         exit();
-        
-    } else {
-        redirectWithError('Token ID inválido');
     }
-} else {
-    redirectWithError('Token ID não recebido');
 }
+
+redirectWithError('Token inválido');
