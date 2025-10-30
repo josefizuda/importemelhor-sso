@@ -3,17 +3,28 @@ require_once 'config.php';
 
 $auth = new Auth();
 
+error_log("🔍 Dashboard - Verificando cookie...");
+
 if (!isset($_COOKIE['sso_token'])) {
+    error_log("❌ Cookie sso_token não encontrado");
     header('Location: index.php');
     exit;
 }
 
+error_log("✅ Cookie encontrado: " . substr($_COOKIE['sso_token'], 0, 10) . "...");
+
 $session = $auth->validateSession($_COOKIE['sso_token']);
+
+error_log("🔍 Resultado validação: " . ($session ? "VÁLIDO" : "INVÁLIDO"));
+
 if (!$session) {
+    error_log("❌ Sessão inválida, limpando cookie");
     $auth->clearSessionCookie();
     header('Location: index.php');
     exit;
 }
+
+error_log("✅ Usuário logado: " . $session['email']);
 
 $applications = $auth->getUserApplications($session['user_id']);
 $firstName = explode(' ', $session['name'])[0];
@@ -329,7 +340,7 @@ $firstName = explode(' ', $session['name'])[0];
     <div class="welcome-section">
         <h1>Bem-vindo, <?php echo htmlspecialchars($firstName); ?>! 👋</h1>
         <p>Aqui está um resumo das suas ferramentas disponíveis</p>
-        <span class="date-badge"><?php echo strftime('%d de %B de %Y', time()); ?></span>
+        <span class="date-badge"><?php echo date('d/m/Y H:i'); ?></span>
     </div>
 
     <h2 class="section-title">Suas Ferramentas</h2>
