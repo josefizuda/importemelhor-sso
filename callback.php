@@ -1,5 +1,7 @@
 <?php
-session_start();
+require_once 'config.php';
+
+$auth = new Auth();
 
 define('AZURE_CLIENT_ID', getenv('AZURE_CLIENT_ID'));
 define('AZURE_CLIENT_SECRET', getenv('AZURE_CLIENT_SECRET'));
@@ -69,7 +71,7 @@ $response = makeRequest($tokenUrl, 'POST', http_build_query($tokenData), [
 
 if ($response['code'] !== 200) {
     error_log('Azure Token Error: ' . $response['body']);
-    redirectWithError('Erro ao obter token. Verifique logs.');
+    redirectWithError('Erro ao obter token. Código: ' . $response['code']);
 }
 
 $tokenResponse = json_decode($response['body'], true);
@@ -78,6 +80,8 @@ if (!isset($tokenResponse['access_token'])) {
     redirectWithError('Token não recebido');
 }
 
+$accessToken = $tokenResponse['access_token'];
+$refreshToken = $tokenResponse['refresh_token'] ?? null;
 $idToken = $tokenResponse['id_token'] ?? null;
 
 if ($idToken) {
@@ -87,17 +91,28 @@ if ($idToken) {
         
         $userEmail = $payload['email'] ?? $payload['preferred_username'] ?? null;
         $userName = $payload['name'] ?? 'Usuário';
-        $userId = $payload['oid'] ?? $payload['sub'] ?? null;
+        $microsoftId = $payload['oid'] ?? $payload['sub'] ?? null;
         
-        if (!$userEmail) {
-            redirectWithError('Email não encontrado');
+        if (!$userEmail || !$microsoftId) {
+            redirectWithError('Email ou ID não encontrado');
         }
         
-        $_SESSION['user_id'] = $userId;
-        $_SESSION['user_email'] = $userEmail;
-        $_SESSION['user_name'] = $userName;
-        $_SESSION['logged_in'] = true;
-        $_SESSION['auth_method'] = 'microsoft_sso';
+        // Criar ou atualizar usuário no PostgreSQL
+        $user = $auth->upsertUser($microsoftId, $userEmail, $userName);
+        
+        if (!$user) {
+            redirectWithError('Erro ao criar usuário');
+        }
+        
+        // Criar sessão no PostgreSQL
+        $sessionToken = $auth->createSession($user['id'], $accessToken, $refreshToken);
+        
+        if (!$sessionToken) {
+            redirectWithError('Erro ao criar sessão');
+        }
+        
+        // Definir cookie SSO
+        $auth->setSessionCookie($sessionToken);
         
         error_log("Login SSO: {$userEmail}");
         
