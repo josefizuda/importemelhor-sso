@@ -27,8 +27,9 @@ $error = $_GET['error'] ?? null;
     <div class="login-branding">
         <div class="brand-content">
             <div class="brand-logo">
-                <img src="/public/images/LogoHazul.png" alt="Importe Melhor" class="logo-image">
+                <span class="logo-icon">🚢</span>
             </div>
+            <h1 class="brand-title">Importe Melhor</h1>
             <p class="brand-subtitle">Plataforma completa de gestão para importação e comércio exterior</p>
             
             <div class="brand-features">
@@ -66,8 +67,9 @@ $error = $_GET['error'] ?? null;
     
     <div class="login-form-container">
         <div class="login-form-wrapper">
-            <div class="mobile-logo">
-                <img src="/public/images/LogoHazul.png" alt="Importe Melhor" class="mobile-logo-image">
+            
+            <div class="logo-header">
+                <img src="/public/images/LogoHazul.png" alt="Importe Melhor" class="header-logo-image">
             </div>
             
             <div class="login-header">
@@ -94,13 +96,6 @@ $error = $_GET['error'] ?? null;
                 <span>Entrar com Microsoft</span>
             </a>
             
-            <div class="login-help">
-                <p style="text-align: center; color: #6B7280; font-size: 0.875rem;">
-                    ✅ Login único para todas as plataformas<br>
-                    ✅ Segurança corporativa Microsoft<br>
-                    ✅ Acesso rápido e simplificado
-                </p>
-            </div>
         </div>
     </div>
 </div>
