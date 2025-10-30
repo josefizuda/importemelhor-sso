@@ -1,13 +1,16 @@
 <?php
-require_once 'config.php';
-
-$auth = new Auth();
+session_start();
 
 define('AZURE_CLIENT_ID', getenv('AZURE_CLIENT_ID'));
 define('AZURE_CLIENT_SECRET', getenv('AZURE_CLIENT_SECRET'));
 define('AZURE_TENANT_ID', getenv('AZURE_TENANT_ID'));
 define('AZURE_REDIRECT_URI', getenv('AZURE_REDIRECT_URI'));
 define('BASE_URL', getenv('APP_URL'));
+define('DB_HOST', getenv('DB_HOST'));
+define('DB_PORT', getenv('DB_PORT'));
+define('DB_NAME', getenv('DB_NAME'));
+define('DB_USER', getenv('DB_USER'));
+define('DB_PASS', getenv('DB_PASS'));
 
 function redirectWithError($message) {
     error_log("SSO Error: " . $message);
@@ -36,10 +39,7 @@ function makeRequest($url, $method = 'GET', $data = null, $headers = []) {
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
     
-    return [
-        'code' => $httpCode,
-        'body' => $response
-    ];
+    return ['code' => $httpCode, 'body' => $response];
 }
 
 if (!AZURE_CLIENT_SECRET || !AZURE_TENANT_ID) {
@@ -47,8 +47,7 @@ if (!AZURE_CLIENT_SECRET || !AZURE_TENANT_ID) {
 }
 
 if (isset($_GET['error'])) {
-    $errorDescription = $_GET['error_description'] ?? 'Erro desconhecido';
-    redirectWithError('Erro: ' . $errorDescription);
+    redirectWithError('Erro: ' . ($_GET['error_description'] ?? 'Desconhecido'));
 }
 
 if (!isset($_GET['code'])) {
@@ -57,18 +56,14 @@ if (!isset($_GET['code'])) {
 
 $tokenUrl = "https://login.microsoftonline.com/" . AZURE_TENANT_ID . "/oauth2/v2.0/token";
 
-$tokenData = [
+$response = makeRequest($tokenUrl, 'POST', http_build_query([
     'client_id' => AZURE_CLIENT_ID,
     'client_secret' => AZURE_CLIENT_SECRET,
     'code' => $_GET['code'],
     'redirect_uri' => AZURE_REDIRECT_URI,
     'grant_type' => 'authorization_code',
     'scope' => 'openid profile email User.Read'
-];
-
-$response = makeRequest($tokenUrl, 'POST', http_build_query($tokenData), [
-    'Content-Type: application/x-www-form-urlencoded'
-]);
+]), ['Content-Type: application/x-www-form-urlencoded']);
 
 if ($response['code'] !== 200) {
     error_log('Azure Token Error: ' . $response['body']);
@@ -101,15 +96,18 @@ $userName = $payload['name'] ?? 'Usuário';
 $microsoftId = $payload['oid'] ?? $payload['sub'] ?? null;
 
 if (!$userEmail || !$microsoftId) {
-    redirectWithError('Email ou ID não encontrado no token');
+    redirectWithError('Email ou ID não encontrado');
 }
 
-// Tentar criar/atualizar usuário manualmente (sem stored procedure)
 try {
-    $db = Database::getInstance()->getConnection();
+    $dsn = "pgsql:host=" . DB_HOST . ";port=" . DB_PORT . ";dbname=" . DB_NAME;
+    $db = new PDO($dsn, DB_USER, DB_PASS, [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+    ]);
     
     // Verificar se usuário existe
-    $stmt = $db->prepare("SELECT * FROM users WHERE microsoft_id = $1");
+    $stmt = $db->prepare("SELECT * FROM users WHERE microsoft_id = ?");
     $stmt->execute([$microsoftId]);
     $user = $stmt->fetch();
     
@@ -117,8 +115,8 @@ try {
         // Atualizar
         $stmt = $db->prepare("
             UPDATE users 
-            SET email = $1, name = $2, last_login = NOW(), updated_at = NOW()
-            WHERE microsoft_id = $3
+            SET email = ?, name = ?, last_login = NOW(), updated_at = NOW()
+            WHERE microsoft_id = ?
             RETURNING *
         ");
         $stmt->execute([$userEmail, $userName, $microsoftId]);
@@ -127,7 +125,7 @@ try {
         // Inserir
         $stmt = $db->prepare("
             INSERT INTO users (microsoft_id, email, name, last_login, created_at, updated_at)
-            VALUES ($1, $2, $3, NOW(), NOW(), NOW())
+            VALUES (?, ?, ?, NOW(), NOW(), NOW())
             RETURNING *
         ");
         $stmt->execute([$microsoftId, $userEmail, $userName]);
@@ -135,30 +133,22 @@ try {
     }
     
     if (!$user) {
-        throw new Exception("Falha ao criar/atualizar usuário");
+        throw new Exception("Falha ao criar usuário");
     }
     
     // Criar sessão
     $sessionToken = bin2hex(random_bytes(32));
-    $expiresAt = date('Y-m-d H:i:s', time() + (60 * 60 * 24 * 7)); // 7 dias
+    $expiresAt = date('Y-m-d H:i:s', time() + (60 * 60 * 24 * 7));
     $ipAddress = $_SERVER['REMOTE_ADDR'] ?? '';
     $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
     
     $stmt = $db->prepare("
         INSERT INTO sessions (user_id, session_token, access_token, refresh_token, expires_at, ip_address, user_agent, created_at, last_activity)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW())
+        VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
     ");
-    $stmt->execute([
-        $user['id'],
-        $sessionToken,
-        $accessToken,
-        $refreshToken,
-        $expiresAt,
-        $ipAddress,
-        $userAgent
-    ]);
+    $stmt->execute([$user['id'], $sessionToken, $accessToken, $refreshToken, $expiresAt, $ipAddress, $userAgent]);
     
-    // Definir cookie
+    // Cookie
     setcookie('sso_token', $sessionToken, [
         'expires' => time() + (60 * 60 * 24 * 7),
         'path' => '/',
@@ -168,12 +158,12 @@ try {
         'samesite' => 'Lax'
     ]);
     
-    error_log("Login SSO bem-sucedido: {$userEmail}");
+    error_log("Login SSO: {$userEmail}");
     
     header('Location: ' . BASE_URL . '/dashboard.php');
     exit();
     
 } catch (Exception $e) {
-    error_log("Erro ao criar usuário: " . $e->getMessage());
-    redirectWithError('Erro ao processar login. Contate o administrador.');
+    error_log("Erro: " . $e->getMessage());
+    redirectWithError('Erro ao processar login');
 }
