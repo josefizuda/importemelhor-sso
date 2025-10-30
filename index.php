@@ -1,9 +1,17 @@
 <?php
-session_start();
-if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true) {
-    header('Location: /dashboard.php');
-    exit();
+require_once 'config.php';
+
+$auth = new Auth();
+
+// Verificar se já está logado via cookie SSO
+if (isset($_COOKIE['sso_token'])) {
+    $session = $auth->validateSession($_COOKIE['sso_token']);
+    if ($session) {
+        header('Location: /dashboard.php');
+        exit();
+    }
 }
+
 $error = $_GET['error'] ?? null;
 ?>
 <!DOCTYPE html>
