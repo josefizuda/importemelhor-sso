@@ -37,25 +37,19 @@
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                         <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
-                    <span>Gestão de participantes</span>
+                    <span>Calculadora de Armazenagem</span>
                 </div>
                 <div class="feature-item">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                         <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
-                    <span>Controle de documentos</span>
+                    <span>Nacionalização de produtos</span>
                 </div>
                 <div class="feature-item">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                         <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
-                    <span>Notificações automáticas</span>
-                </div>
-                <div class="feature-item">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                        <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                    <span>Itinerários personalizados</span>
+                    <span>Logistica</span>
                 </div>
             </div>
             
@@ -76,6 +70,7 @@
             </div>
             
             <div class="login-header">
+                <img src="https://conteudo.importemelhor.com.br/wp-content/uploads/2025/08/TamanhosIM-branco-horizontal02@2x.png" alt="Importe Melhor" class="logo">
                 <h2>Bem-vindo de volta! 👋</h2>
                 <p>Acesse todas as ferramentas com login único</p>
             </div>
@@ -92,11 +87,6 @@
             </a>
             
             <div class="login-help">
-                <p style="text-align: center; color: #6B7280; font-size: 0.875rem;">
-                    ✅ Login único para todas plataformas<br>
-                    ✅ Segurança corporativa Microsoft<br>
-                    ✅ Acesso rápido e simplificado
-                </p>
             </div>
             
         </div>
