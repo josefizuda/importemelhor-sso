@@ -153,21 +153,25 @@ class Auth {
     }
     
     public function getUserApplications($user_id) {
-        try {
-            $stmt = $this->db->prepare("
-                SELECT a.* 
-                FROM applications a
-                INNER JOIN user_app_access uaa ON a.id = uaa.app_id
-                WHERE uaa.user_id = $1 AND a.is_active = TRUE
-                ORDER BY a.app_name
-            ");
-            $stmt->execute([$user_id]);
-            return $stmt->fetchAll();
-        } catch (PDOException $e) {
-            error_log("Error getting user applications: " . $e->getMessage());
-            return [];
-        }
+    try {
+        $stmt = $this->db->prepare("
+            SELECT a.* 
+            FROM applications a
+            INNER JOIN user_app_access uaa ON a.id = uaa.app_id
+            WHERE uaa.user_id = ? AND a.is_active = TRUE
+            ORDER BY a.app_name
+        ");
+        $stmt->execute([$user_id]);
+        $result = $stmt->fetchAll();
+        
+        error_log("🔍 Apps para user_id $user_id: " . count($result));
+        
+        return $result;
+    } catch (PDOException $e) {
+        error_log("❌ Error getting user applications: " . $e->getMessage());
+        return [];
     }
+}
     
     public function destroySession($session_token) {
         try {
