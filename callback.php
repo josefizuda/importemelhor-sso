@@ -13,7 +13,7 @@ define('DB_USER', getenv('DB_USER'));
 define('DB_PASS', getenv('DB_PASS'));
 
 function redirectWithError($message) {
-    error_log("SSO Error: " . $message);
+    error_log("❌ SSO Error: " . $message);
     header('Location: ' . BASE_URL . '/index.php?error=' . urlencode($message));
     exit();
 }
@@ -43,16 +43,18 @@ function makeRequest($url, $method = 'GET', $data = null, $headers = []) {
 }
 
 if (!AZURE_CLIENT_SECRET || !AZURE_TENANT_ID) {
-    redirectWithError('Configurações do Azure não definidas.');
+    redirectWithError('Configurações do Azure não definidas');
 }
 
 if (isset($_GET['error'])) {
-    redirectWithError('Erro: ' . ($_GET['error_description'] ?? 'Desconhecido'));
+    redirectWithError('Erro Microsoft: ' . ($_GET['error_description'] ?? 'Desconhecido'));
 }
 
 if (!isset($_GET['code'])) {
-    redirectWithError('Código não recebido');
+    redirectWithError('Código de autorização não recebido');
 }
+
+error_log("✅ Código recebido: " . substr($_GET['code'], 0, 20) . "...");
 
 $tokenUrl = "https://login.microsoftonline.com/" . AZURE_TENANT_ID . "/oauth2/v2.0/token";
 
@@ -66,15 +68,17 @@ $response = makeRequest($tokenUrl, 'POST', http_build_query([
 ]), ['Content-Type: application/x-www-form-urlencoded']);
 
 if ($response['code'] !== 200) {
-    error_log('Azure Token Error: ' . $response['body']);
-    redirectWithError('Erro ao obter token');
+    error_log("❌ Azure Token Error: " . $response['body']);
+    redirectWithError('Erro ao obter token da Microsoft');
 }
 
 $tokenResponse = json_decode($response['body'], true);
 
 if (!isset($tokenResponse['access_token'])) {
-    redirectWithError('Token não recebido');
+    redirectWithError('Token de acesso não recebido');
 }
+
+error_log("✅ Token recebido");
 
 $accessToken = $tokenResponse['access_token'];
 $refreshToken = $tokenResponse['refresh_token'] ?? null;
@@ -96,8 +100,10 @@ $userName = $payload['name'] ?? 'Usuário';
 $microsoftId = $payload['oid'] ?? $payload['sub'] ?? null;
 
 if (!$userEmail || !$microsoftId) {
-    redirectWithError('Email ou ID não encontrado');
+    redirectWithError('Email ou ID não encontrado no token');
 }
+
+error_log("✅ Usuário: $userEmail (ID: $microsoftId)");
 
 try {
     $dsn = "pgsql:host=" . DB_HOST . ";port=" . DB_PORT . ";dbname=" . DB_NAME;
@@ -106,12 +112,15 @@ try {
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
     ]);
     
+    error_log("✅ Conectado ao PostgreSQL");
+    
     // Verificar se usuário existe
     $stmt = $db->prepare("SELECT * FROM users WHERE microsoft_id = ?");
     $stmt->execute([$microsoftId]);
     $user = $stmt->fetch();
     
     if ($user) {
+        error_log("✅ Usuário existe, atualizando...");
         // Atualizar
         $stmt = $db->prepare("
             UPDATE users 
@@ -122,6 +131,7 @@ try {
         $stmt->execute([$userEmail, $userName, $microsoftId]);
         $user = $stmt->fetch();
     } else {
+        error_log("✅ Criando novo usuário...");
         // Inserir
         $stmt = $db->prepare("
             INSERT INTO users (microsoft_id, email, name, last_login, created_at, updated_at)
@@ -133,8 +143,10 @@ try {
     }
     
     if (!$user) {
-        throw new Exception("Falha ao criar usuário");
+        throw new Exception("Falha ao criar/atualizar usuário");
     }
+    
+    error_log("✅ Usuário ID: " . $user['id']);
     
     // Criar sessão
     $sessionToken = bin2hex(random_bytes(32));
@@ -148,8 +160,10 @@ try {
     ");
     $stmt->execute([$user['id'], $sessionToken, $accessToken, $refreshToken, $expiresAt, $ipAddress, $userAgent]);
     
+    error_log("✅ Sessão criada: " . substr($sessionToken, 0, 10) . "...");
+    
     // Cookie
-    setcookie('sso_token', $sessionToken, [
+    $cookieSet = setcookie('sso_token', $sessionToken, [
         'expires' => time() + (60 * 60 * 24 * 7),
         'path' => '/',
         'domain' => '.importemelhor.com.br',
@@ -158,12 +172,14 @@ try {
         'samesite' => 'Lax'
     ]);
     
-    error_log("Login SSO: {$userEmail}");
+    error_log("✅ Cookie definido: " . ($cookieSet ? 'SIM' : 'NÃO'));
+    error_log("✅ Login SSO completo para: {$userEmail}");
     
     header('Location: ' . BASE_URL . '/dashboard.php');
     exit();
     
 } catch (Exception $e) {
-    error_log("Erro: " . $e->getMessage());
-    redirectWithError('Erro ao processar login');
+    error_log("❌ Erro: " . $e->getMessage());
+    error_log("❌ Stack: " . $e->getTraceAsString());
+    redirectWithError('Erro ao processar login: ' . $e->getMessage());
 }
