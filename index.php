@@ -27,9 +27,9 @@
     <div class="login-branding">
         <div class="brand-content">
             <div class="brand-logo">
-                <span class="logo-icon">🚢</span>
+                <img src="/public/images/LogoHazul.png" alt="Importe Melhor" class="logo-image">
             </div>
-            <h1 class="brand-title">Importe Melhor</h1>
+            <h1 class="brand-title" style="display: none;">Importe Melhor</h1>
             <p class="brand-subtitle">Plataforma completa de gestão para importação e comércio exterior</p>
             
             <div class="brand-features">
@@ -37,19 +37,25 @@
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                         <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
-                    <span>Calculadora de Armazenagem</span>
+                    <span>Gestão de participantes</span>
                 </div>
                 <div class="feature-item">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                         <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
-                    <span>Nacionalização de produtos</span>
+                    <span>Controle de documentos</span>
                 </div>
                 <div class="feature-item">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                         <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
-                    <span>Logistica</span>
+                    <span>Notificações automáticas</span>
+                </div>
+                <div class="feature-item">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span>Itinerários personalizados</span>
                 </div>
             </div>
             
@@ -65,18 +71,16 @@
             
             <!-- Mobile Logo -->
             <div class="mobile-logo">
-                <span class="logo-icon">🚢</span>
-                <span class="logo-text">Importe Melhor</span>
+                <img src="/public/images/LogoHazul.png" alt="Importe Melhor" class="mobile-logo-image">
             </div>
             
             <div class="login-header">
-                <img src="https://conteudo.importemelhor.com.br/wp-content/uploads/2025/08/TamanhosIM-branco-horizontal02@2x.png" alt="Importe Melhor" class="logo">
                 <h2>Bem-vindo de volta! 👋</h2>
                 <p>Acesse todas as ferramentas com login único</p>
             </div>
             
             <!-- Microsoft SSO Button -->
-            <a href="/auth/login" class="btn-microsoft">
+            <a href="/sso-login.php" class="btn-microsoft">
                 <svg width="21" height="21" viewBox="0 0 21 21" fill="none">
                     <rect width="10" height="10" fill="#F25022"/>
                     <rect x="11" width="10" height="10" fill="#7FBA00"/>
@@ -87,6 +91,11 @@
             </a>
             
             <div class="login-help">
+                <p style="text-align: center; color: #6B7280; font-size: 0.875rem;">
+                    ✅ Login único para todas plataformas<br>
+                    ✅ Segurança corporativa Microsoft<br>
+                    ✅ Acesso rápido e simplificado
+                </p>
             </div>
             
         </div>
