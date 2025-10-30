@@ -43,15 +43,15 @@ No serviço `bd-sso`, importe o schema SQL disponível em `/database/schema.sql`
 
 No Easypanel, adicione as variáveis do arquivo `.env.example` com os valores reais:
 ```env
-AZURE_CLIENT_ID=ac66d4b8-04a0-4534-9e02-3a7a49778af8
-AZURE_CLIENT_SECRET=1j78Q~gZvsHljdaYw-LER~d_PXCYuDpV1uVVJbkI
-AZURE_TENANT_ID=6d30004d-ea6b-4445-8824-ea27215314dd
+AZURE_CLIENT_ID=
+AZURE_CLIENT_SECRET=
+AZURE_TENANT_ID=
 DB_HOST=bd-sso
 DB_PORT=5432
-DB_NAME=importemelhor_sso
+DB_NAME=
 DB_USER=sso_user
 DB_PASS=SUA_SENHA_DO_BANCO
-APP_URL=https://auth.importemelhor.com
+APP_URL=https://auth.seusite.com
 COOKIE_DOMAIN=.importemelhor.com
 COOKIE_SECURE=true
 ```
@@ -64,9 +64,9 @@ COOKIE_SECURE=true
 ## 🔧 Configuração Azure AD
 
 Já configurado com:
-- **Tenant ID:** `6d30004d-ea6b-4445-8824-ea27215314dd`
-- **Client ID:** `ac66d4b8-04a0-4534-9e02-3a7a49778af8`
-- **Redirect URI:** `https://auth.importemelhor.com/callback.php`
+- **Tenant ID:** 
+- **Client ID:** 
+- **Redirect URI:** `https://auth.seusite.com/callback.php`
 
 ## 📦 Integrando em Outras Aplicações
 
