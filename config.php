@@ -1,43 +1,29 @@
 <?php
 session_start();
 
-// Carrega variáveis de ambiente
-if (file_exists(__DIR__ . '/.env')) {
-    $env = parse_ini_file(__DIR__ . '/.env');
-    foreach ($env as $key => $value) {
-        $_ENV[$key] = $value;
-    }
-}
+define('CLIENT_ID', getenv('AZURE_CLIENT_ID') ?: 'ac66d4b8-04a0-4534-9e02-3a7a497784f8');
+define('CLIENT_SECRET', getenv('AZURE_CLIENT_SECRET') ?: '');
+define('TENANT_ID', getenv('AZURE_TENANT_ID') ?: '');
+define('REDIRECT_URI', getenv('APP_URL') . '/callback.php');
 
-// Configurações do Azure AD
-define('CLIENT_ID', $_ENV['AZURE_CLIENT_ID'] ?? 'SEU_CLIENT_ID');
-define('CLIENT_SECRET', $_ENV['AZURE_CLIENT_SECRET'] ?? 'SEU_CLIENT_SECRET');
-define('TENANT_ID', $_ENV['AZURE_TENANT_ID'] ?? 'SEU_TENANT_ID');
-define('REDIRECT_URI', ($_ENV['APP_URL'] ?? 'https://auth.importemelhor.com') . '/callback.php');
-
-// URLs da Microsoft
 define('AUTHORITY', 'https://login.microsoftonline.com/' . TENANT_ID);
 define('AUTHORIZE_ENDPOINT', AUTHORITY . '/oauth2/v2.0/authorize');
 define('TOKEN_ENDPOINT', AUTHORITY . '/oauth2/v2.0/token');
 define('USER_ENDPOINT', 'https://graph.microsoft.com/v1.0/me');
-define('PHOTO_ENDPOINT', 'https://graph.microsoft.com/v1.0/me/photo/$value');
 define('SCOPES', 'openid profile email User.Read');
 
-// Configurações do Banco (PostgreSQL)
-define('DB_HOST', $_ENV['DB_HOST'] ?? 'bd-sso');
-define('DB_PORT', $_ENV['DB_PORT'] ?? '5432');
-define('DB_NAME', $_ENV['DB_NAME'] ?? 'importemelhor_sso');
-define('DB_USER', $_ENV['DB_USER'] ?? 'sso_user');
-define('DB_PASS', $_ENV['DB_PASS'] ?? '');
+define('DB_HOST', getenv('DB_HOST') ?: 'bd-sso');
+define('DB_PORT', getenv('DB_PORT') ?: '5432');
+define('DB_NAME', getenv('DB_NAME') ?: 'importemelhor_sso');
+define('DB_USER', getenv('DB_USER') ?: 'sso_user');
+define('DB_PASS', getenv('DB_PASS') ?: '');
 
-// Configurações de Cookie
-define('COOKIE_DOMAIN', $_ENV['COOKIE_DOMAIN'] ?? '.importemelhor.com');
-define('COOKIE_SECURE', filter_var($_ENV['COOKIE_SECURE'] ?? true, FILTER_VALIDATE_BOOLEAN));
+define('COOKIE_DOMAIN', getenv('COOKIE_DOMAIN') ?: '.importemelhor.com.br');
+define('COOKIE_SECURE', true);
 define('COOKIE_HTTPONLY', true);
 define('COOKIE_SAMESITE', 'Lax');
-define('SESSION_LIFETIME', 60 * 60 * 24 * 7); // 7 dias
+define('SESSION_LIFETIME', 60 * 60 * 24 * 7);
 
-// Database Singleton para PostgreSQL
 class Database {
     private static $instance = null;
     private $connection;
@@ -45,25 +31,20 @@ class Database {
     private function __construct() {
         try {
             $dsn = sprintf(
-                "pgsql:host=%s;port=%s;dbname=%s;options='--client_encoding=UTF8'",
+                "pgsql:host=%s;port=%s;dbname=%s",
                 DB_HOST,
                 DB_PORT,
                 DB_NAME
             );
             
-            $this->connection = new PDO(
-                $dsn,
-                DB_USER,
-                DB_PASS,
-                [
-                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                    PDO::ATTR_EMULATE_PREPARES => false
-                ]
-            );
+            $this->connection = new PDO($dsn, DB_USER, DB_PASS, [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                PDO::ATTR_EMULATE_PREPARES => false
+            ]);
         } catch(PDOException $e) {
-            error_log("Database connection error: " . $e->getMessage());
-            die("Erro de conexão com o banco de dados. Tente novamente mais tarde.");
+            error_log("Database error: " . $e->getMessage());
+            die("Erro de conexão. Verifique as configurações do banco de dados.");
         }
     }
     
@@ -79,7 +60,6 @@ class Database {
     }
 }
 
-// Auth Class adaptada para PostgreSQL
 class Auth {
     private $db;
     
@@ -163,22 +143,6 @@ class Auth {
         } catch (PDOException $e) {
             error_log("Error getting user applications: " . $e->getMessage());
             return [];
-        }
-    }
-    
-    public function logAudit($user_id, $action, $app_id = null, $details = null) {
-        try {
-            $ip_address = $_SERVER['REMOTE_ADDR'] ?? '';
-            $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? '';
-            $details_json = $details ? json_encode($details) : null;
-            
-            $stmt = $this->db->prepare("
-                INSERT INTO audit_logs (user_id, action, app_id, ip_address, user_agent, details)
-                VALUES ($1, $2, $3, $4, $5, $6::jsonb)
-            ");
-            $stmt->execute([$user_id, $action, $app_id, $ip_address, $user_agent, $details_json]);
-        } catch (PDOException $e) {
-            error_log("Error logging audit: " . $e->getMessage());
         }
     }
     
