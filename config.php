@@ -108,15 +108,38 @@ class Auth {
     }
     
     public function validateSession($session_token) {
-        try {
-            $stmt = $this->db->prepare("SELECT * FROM sp_validate_session($1)");
-            $stmt->execute([$session_token]);
-            return $stmt->fetch();
-        } catch (PDOException $e) {
-            error_log("Error validating session: " . $e->getMessage());
-            return false;
+    try {
+        // SQL direto ao invés de stored procedure
+        $stmt = $this->db->prepare("
+            SELECT 
+                s.id,
+                s.user_id,
+                s.session_token,
+                s.expires_at,
+                u.email,
+                u.name,
+                u.photo_url,
+                u.is_active
+            FROM sessions s
+            INNER JOIN users u ON s.user_id = u.id
+            WHERE s.session_token = ?
+            AND s.expires_at > NOW()
+            AND u.is_active = TRUE
+        ");
+        $stmt->execute([$session_token]);
+        $result = $stmt->fetch();
+        
+        error_log("🔍 Validação sessão: " . ($result ? "VÁLIDA" : "INVÁLIDA"));
+        if ($result) {
+            error_log("✅ Usuário: " . $result['email']);
         }
+        
+        return $result;
+    } catch (PDOException $e) {
+        error_log("❌ Error validating session: " . $e->getMessage());
+        return false;
     }
+}
     
     public function checkAppAccess($user_id, $app_slug) {
         try {
