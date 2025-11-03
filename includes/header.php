@@ -1,10 +1,13 @@
 <?php
-// Get notifications count
+// Get notifications count and recent notifications (limit to 5 most recent)
 $unreadCount = 0;
 $notifications = [];
 if (isset($auth) && isset($session)) {
     $unreadCount = $auth->getUnreadNotificationCount($session['user_id']);
-    $notifications = $auth->getUserNotifications($session['user_id'], false);
+    // Get all notifications (including read ones) for dropdown
+    $allNotifications = $auth->getUserNotifications($session['user_id'], true);
+    // Limit to 5 most recent
+    $notifications = array_slice($allNotifications, 0, 5);
 }
 ?>
 <!-- Header -->
@@ -101,13 +104,25 @@ if (isset($auth) && isset($session)) {
                             </div>
                             <div class="notification-content">
                                 <div class="notification-title"><?php echo htmlspecialchars($notif['title']); ?></div>
-                                <div class="notification-message"><?php echo htmlspecialchars($notif['message']); ?></div>
+                                <div class="notification-message">
+                                    <?php
+                                    $message = htmlspecialchars($notif['message']);
+                                    echo mb_strlen($message) > 60 ? mb_substr($message, 0, 60) . '...' : $message;
+                                    ?>
+                                </div>
                                 <div class="notification-time"><?php echo date('d/m/Y H:i', strtotime($notif['created_at'])); ?></div>
                             </div>
                         </div>
                         <?php endforeach; ?>
                     <?php endif; ?>
                 </div>
+                <?php if (count($notifications) > 0): ?>
+                <div style="padding: 0.75rem 1.25rem; border-top: 1px solid var(--border-color); text-align: center;">
+                    <a href="/notifications.php" style="color: var(--color-primary); text-decoration: none; font-weight: 600; font-size: 0.875rem;">
+                        Ver todas as notificações
+                    </a>
+                </div>
+                <?php endif; ?>
             </div>
         </div>
 
@@ -301,6 +316,7 @@ function toggleNotifications() {
 }
 
 function markAsRead(notificationId) {
+    // Mark as read and go to notifications page
     fetch('/api/mark_notification_read.php', {
         method: 'POST',
         headers: {
@@ -311,8 +327,8 @@ function markAsRead(notificationId) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // Reload page to update counts
-            window.location.reload();
+            // Go to notifications page
+            window.location.href = '/notifications.php#notif-' + notificationId;
         }
     })
     .catch(error => console.error('Error:', error));

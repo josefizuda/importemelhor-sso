@@ -71,31 +71,44 @@ try {
     // Generate unique filename
     $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
     $filename = 'banner_' . time() . '_' . uniqid() . '.' . $extension;
-    $upload_dir = __DIR__ . '/../public/uploads/banners/';
+
+    // Use absolute path
+    $upload_dir = realpath(__DIR__ . '/..') . '/public/uploads/banners/';
     $upload_path = $upload_dir . $filename;
 
     // Create directory if it doesn't exist
-    if (!is_dir($upload_dir)) {
-        if (!mkdir($upload_dir, 0777, true)) {
+    if (!file_exists($upload_dir)) {
+        if (!@mkdir($upload_dir, 0777, true)) {
             http_response_code(500);
-            $error_msg = error_get_last();
             echo json_encode([
                 'error' => 'Failed to create upload directory',
-                'details' => $error_msg ? $error_msg['message'] : 'Unknown error',
-                'path' => $upload_dir
+                'path' => $upload_dir,
+                'parent_exists' => file_exists(dirname($upload_dir)),
+                'parent_writable' => is_writable(dirname($upload_dir))
             ]);
             exit;
         }
-        // Ensure directory has correct permissions
-        chmod($upload_dir, 0777);
     }
 
-    // Verify directory is writable
+    // Ensure directory has correct permissions
+    @chmod($upload_dir, 0777);
+
+    // Verify directory exists and is writable
+    if (!is_dir($upload_dir)) {
+        http_response_code(500);
+        echo json_encode([
+            'error' => 'Upload directory does not exist',
+            'path' => $upload_dir
+        ]);
+        exit;
+    }
+
     if (!is_writable($upload_dir)) {
         http_response_code(500);
         echo json_encode([
             'error' => 'Upload directory is not writable',
-            'path' => $upload_dir
+            'path' => $upload_dir,
+            'permissions' => substr(sprintf('%o', fileperms($upload_dir)), -4)
         ]);
         exit;
     }
