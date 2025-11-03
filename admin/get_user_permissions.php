@@ -21,7 +21,7 @@ if (!$session) {
 }
 
 // Check admin permission
-$isAdmin = ($session['email'] === 'app@importemelhor.com.br');
+$isAdmin = ($auth->isAdmin($session['user_id']));
 if (!$isAdmin) {
     http_response_code(403);
     echo json_encode(['error' => 'Forbidden']);

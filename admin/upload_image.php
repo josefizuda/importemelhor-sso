@@ -32,7 +32,7 @@ try {
     }
 
     // Check admin permission
-    $isAdmin = ($session['email'] === 'app@importemelhor.com.br');
+    $isAdmin = ($auth->isAdmin($session['user_id']));
     if (!$isAdmin) {
         http_response_code(403);
         echo json_encode(['error' => 'Forbidden']);
@@ -76,11 +76,28 @@ try {
 
     // Create directory if it doesn't exist
     if (!is_dir($upload_dir)) {
-        if (!mkdir($upload_dir, 0755, true)) {
+        if (!mkdir($upload_dir, 0777, true)) {
             http_response_code(500);
-            echo json_encode(['error' => 'Failed to create upload directory']);
+            $error_msg = error_get_last();
+            echo json_encode([
+                'error' => 'Failed to create upload directory',
+                'details' => $error_msg ? $error_msg['message'] : 'Unknown error',
+                'path' => $upload_dir
+            ]);
             exit;
         }
+        // Ensure directory has correct permissions
+        chmod($upload_dir, 0777);
+    }
+
+    // Verify directory is writable
+    if (!is_writable($upload_dir)) {
+        http_response_code(500);
+        echo json_encode([
+            'error' => 'Upload directory is not writable',
+            'path' => $upload_dir
+        ]);
+        exit;
     }
 
     // Move uploaded file

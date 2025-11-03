@@ -34,7 +34,7 @@
         </div>
 
         <?php
-        $isAdmin = ($session['email'] === 'app@importemelhor.com.br');
+        $isAdmin = isset($auth) && isset($session) ? $auth->isAdmin($session['user_id']) : false;
         if ($isAdmin):
         ?>
         <!-- Admin Menu -->

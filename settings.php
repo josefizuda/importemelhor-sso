@@ -17,7 +17,7 @@ if (!$session) {
 }
 
 $firstName = explode(' ', $session['name'])[0];
-$isAdmin = ($session['email'] === 'app@importemelhor.com.br');
+$isAdmin = ($auth->isAdmin($session['user_id']));
 $applications = $auth->getUserApplications($session['user_id']);
 
 $pageTitle = 'Configurações';

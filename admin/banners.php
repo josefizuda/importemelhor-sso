@@ -18,7 +18,7 @@ if (!$session) {
 }
 
 // Check admin permission
-$isAdmin = ($session['email'] === 'app@importemelhor.com.br');
+$isAdmin = ($auth->isAdmin($session['user_id']));
 if (!$isAdmin) {
     header('Location: /dashboard.php');
     exit;

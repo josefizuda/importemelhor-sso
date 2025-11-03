@@ -604,4 +604,22 @@ class Auth {
             return false;
         }
     }
+
+    // Check if user is admin
+    public function isAdmin($user_id) {
+        try {
+            $stmt = $this->db->prepare("
+                SELECT r.is_admin
+                FROM users u
+                LEFT JOIN user_roles r ON u.role_id = r.id
+                WHERE u.id = ?
+            ");
+            $stmt->execute([$user_id]);
+            $result = $stmt->fetch();
+            return $result ? (bool)$result['is_admin'] : false;
+        } catch (PDOException $e) {
+            error_log("Error checking if user is admin: " . $e->getMessage());
+            return false;
+        }
+    }
 }
