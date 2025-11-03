@@ -39,7 +39,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'can_manage_users' => isset($_POST['can_manage_users']),
             'can_manage_banners' => isset($_POST['can_manage_banners']),
             'can_manage_apps' => isset($_POST['can_manage_apps']),
-            'can_access_external_sites' => isset($_POST['can_access_external_sites'])
+            'can_access_external_sites' => isset($_POST['can_access_external_sites']),
+            'can_access_chat' => isset($_POST['can_access_chat'])
         ];
 
         switch ($_POST['action']) {
@@ -132,6 +133,9 @@ $roles = $auth->getAllRoles();
                                 <?php if ($role['can_access_external_sites']): ?>
                                 <span class="badge">Acessar Sites Externos</span>
                                 <?php endif; ?>
+                                <?php if ($role['can_access_chat'] ?? true): ?>
+                                <span class="badge">Acessar Chat</span>
+                                <?php endif; ?>
                             </div>
                         </div>
 
@@ -194,9 +198,14 @@ $roles = $auth->getAllRoles();
                         <span>Gerenciar Aplicações</span>
                     </label>
 
-                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; margin-bottom: 0.75rem;">
                         <input type="checkbox" name="can_access_external_sites" id="can_access_external_sites">
                         <span>Acessar Sites Externos</span>
+                    </label>
+
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                        <input type="checkbox" name="can_access_chat" id="can_access_chat" checked>
+                        <span>Pode acessar Chat</span>
                     </label>
                 </div>
 
@@ -236,6 +245,7 @@ $roles = $auth->getAllRoles();
             document.getElementById('can_manage_banners').checked = false;
             document.getElementById('can_manage_apps').checked = false;
             document.getElementById('can_access_external_sites').checked = false;
+            document.getElementById('can_access_chat').checked = true;
             document.getElementById('slugGroup').style.display = 'block';
             document.getElementById('roleModal').style.display = 'flex';
         }
@@ -252,6 +262,7 @@ $roles = $auth->getAllRoles();
             document.getElementById('can_manage_banners').checked = role.can_manage_banners;
             document.getElementById('can_manage_apps').checked = role.can_manage_apps;
             document.getElementById('can_access_external_sites').checked = role.can_access_external_sites;
+            document.getElementById('can_access_chat').checked = role.can_access_chat !== undefined ? role.can_access_chat : true;
             document.getElementById('slugGroup').style.display = 'none';
             document.getElementById('roleModal').style.display = 'flex';
         }
