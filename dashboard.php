@@ -220,5 +220,6 @@ $pageTitle = 'Dashboard';
     <!-- Scripts -->
     <script src="/public/js/main.js"></script>
     <script src="/public/js/carousel.js"></script>
+<?php include 'includes/chat_widget.php'; ?>
 </body>
 </html>

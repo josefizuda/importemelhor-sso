@@ -139,5 +139,6 @@ $pageTitle = 'Configurações';
             }
         }
     </script>
+<?php include 'includes/chat_widget.php'; ?>
 </body>
 </html>
