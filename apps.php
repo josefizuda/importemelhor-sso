@@ -96,5 +96,6 @@ $pageTitle = 'Ferramentas';
 
     <!-- Scripts -->
     <script src="/public/js/main.js"></script>
+<?php include 'includes/chat_widget.php'; ?>
 </body>
 </html>

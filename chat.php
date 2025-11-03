@@ -21,6 +21,13 @@ $firstName = explode(' ', $session['name'])[0];
 $pageTitle = 'Chat';
 $applications = $auth->getUserApplications($session['user_id']);
 
+// Check chat permission
+$hasPermission = $auth->checkPermission($session['user_id'], 'access_chat');
+if (!$hasPermission) {
+    header('Location: /dashboard.php');
+    exit;
+}
+
 // Get conversation ID if specified
 $conversation_id = isset($_GET['c']) ? (int)$_GET['c'] : null;
 
