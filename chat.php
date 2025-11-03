@@ -35,8 +35,14 @@ $conversation_id = isset($_GET['c']) ? (int)$_GET['c'] : null;
 if (isset($_GET['user']) && !$conversation_id) {
     $other_user_id = (int)$_GET['user'];
     $conversation_id = $auth->getOrCreateConversation($session['user_id'], $other_user_id);
-    header('Location: /chat.php?c=' . $conversation_id);
-    exit;
+
+    if ($conversation_id) {
+        header('Location: /chat.php?c=' . $conversation_id);
+        exit;
+    } else {
+        // Error creating conversation - show error message
+        $error_message = "Não foi possível criar a conversa. Verifique se as tabelas do chat foram criadas: <a href='/check_chat_setup.php'>Verificar Configuração</a>";
+    }
 }
 
 // Get all conversations
@@ -446,6 +452,12 @@ $all_users = $auth->getAllUsers();
             <?php include 'includes/header.php'; ?>
 
             <main class="main-content" style="padding: 1rem;">
+                <?php if (isset($error_message)): ?>
+                <div style="background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                    <strong>⚠️ Erro:</strong> <?php echo $error_message; ?>
+                </div>
+                <?php endif; ?>
+
                 <div class="chat-container">
                     <!-- Conversations Sidebar -->
                     <div class="conversations-sidebar">
