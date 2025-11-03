@@ -116,9 +116,18 @@ try {
     // Move uploaded file
     if (!move_uploaded_file($file['tmp_name'], $upload_path)) {
         http_response_code(500);
-        echo json_encode(['error' => 'Failed to save file']);
+        echo json_encode([
+            'error' => 'Failed to save file',
+            'tmp_name' => $file['tmp_name'],
+            'upload_path' => $upload_path,
+            'tmp_exists' => file_exists($file['tmp_name']),
+            'upload_dir_writable' => is_writable($upload_dir)
+        ]);
         exit;
     }
+
+    // Set file permissions
+    @chmod($upload_path, 0644);
 
     // Return the URL
     $file_url = '/public/uploads/banners/' . $filename;
