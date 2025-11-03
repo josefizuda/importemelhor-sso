@@ -13,17 +13,20 @@ if (!$session) {
     die('Sessão inválida');
 }
 
+// Get database connection
+$db = Database::getInstance()->getConnection();
+
 echo "<h1>Diagnóstico do Sistema de Chat</h1>";
 echo "<style>body { font-family: Arial; padding: 20px; } .ok { color: green; } .error { color: red; } .warning { color: orange; }</style>";
 
 // Check if chat tables exist
-$tables_to_check = ['conversations', 'conversation_participants', 'messages', 'message_reads'];
+$tables_to_check = ['chat_conversations', 'chat_participants', 'chat_messages', 'chat_message_reads'];
 $all_tables_exist = true;
 
 echo "<h2>1. Verificando Tabelas do Banco de Dados</h2>";
 foreach ($tables_to_check as $table) {
     try {
-        $stmt = $auth->db->query("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = '$table')");
+        $stmt = $db->query("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = '$table')");
         $exists = $stmt->fetch()['exists'];
 
         if ($exists) {
@@ -41,7 +44,7 @@ foreach ($tables_to_check as $table) {
 // Check if can_access_chat column exists
 echo "<h2>2. Verificando Coluna de Permissão de Chat</h2>";
 try {
-    $stmt = $auth->db->query("SELECT EXISTS (SELECT FROM information_schema.columns WHERE table_name = 'user_roles' AND column_name = 'can_access_chat')");
+    $stmt = $db->query("SELECT EXISTS (SELECT FROM information_schema.columns WHERE table_name = 'user_roles' AND column_name = 'can_access_chat')");
     $exists = $stmt->fetch()['exists'];
 
     if ($exists) {
@@ -71,7 +74,7 @@ echo "<h2>4. Verificando Stored Procedures</h2>";
 $procedures = ['sp_get_user_conversations', 'sp_get_conversation_messages', 'sp_count_total_unread_messages'];
 foreach ($procedures as $proc) {
     try {
-        $stmt = $auth->db->query("SELECT EXISTS (SELECT FROM pg_proc WHERE proname = '$proc')");
+        $stmt = $db->query("SELECT EXISTS (SELECT FROM pg_proc WHERE proname = '$proc')");
         $exists = $stmt->fetch()['exists'];
 
         if ($exists) {
