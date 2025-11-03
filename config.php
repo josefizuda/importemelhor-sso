@@ -204,4 +204,177 @@ class Auth {
             'samesite' => COOKIE_SAMESITE
         ]);
     }
+
+    // Banner Management Functions
+    public function getActiveBanners() {
+        try {
+            $stmt = $this->db->prepare("SELECT * FROM sp_get_active_banners()");
+            $stmt->execute();
+            return $stmt->fetchAll();
+        } catch (PDOException $e) {
+            error_log("Error getting active banners: " . $e->getMessage());
+            return [];
+        }
+    }
+
+    public function getAllBanners() {
+        try {
+            $stmt = $this->db->prepare("
+                SELECT b.*, u.name as created_by_name
+                FROM banners b
+                LEFT JOIN users u ON b.created_by = u.id
+                ORDER BY b.display_order ASC, b.created_at DESC
+            ");
+            $stmt->execute();
+            return $stmt->fetchAll();
+        } catch (PDOException $e) {
+            error_log("Error getting all banners: " . $e->getMessage());
+            return [];
+        }
+    }
+
+    public function createBanner($title, $description, $image_url, $link_url, $link_text, $display_order, $user_id, $start_date = null, $end_date = null) {
+        try {
+            $stmt = $this->db->prepare("
+                INSERT INTO banners (title, description, image_url, link_url, link_text, display_order, created_by, start_date, end_date)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                RETURNING *
+            ");
+            $stmt->execute([$title, $description, $image_url, $link_url, $link_text, $display_order, $user_id, $start_date, $end_date]);
+            return $stmt->fetch();
+        } catch (PDOException $e) {
+            error_log("Error creating banner: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function updateBanner($id, $title, $description, $image_url, $link_url, $link_text, $display_order, $is_active, $start_date = null, $end_date = null) {
+        try {
+            $stmt = $this->db->prepare("
+                UPDATE banners
+                SET title = ?, description = ?, image_url = ?, link_url = ?, link_text = ?,
+                    display_order = ?, is_active = ?, start_date = ?, end_date = ?
+                WHERE id = ?
+                RETURNING *
+            ");
+            $stmt->execute([$title, $description, $image_url, $link_url, $link_text, $display_order, $is_active, $start_date, $end_date, $id]);
+            return $stmt->fetch();
+        } catch (PDOException $e) {
+            error_log("Error updating banner: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function deleteBanner($id) {
+        try {
+            $stmt = $this->db->prepare("DELETE FROM banners WHERE id = ?");
+            return $stmt->execute([$id]);
+        } catch (PDOException $e) {
+            error_log("Error deleting banner: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function toggleBannerStatus($id) {
+        try {
+            $stmt = $this->db->prepare("
+                UPDATE banners
+                SET is_active = NOT is_active
+                WHERE id = ?
+                RETURNING is_active
+            ");
+            $stmt->execute([$id]);
+            return $stmt->fetch();
+        } catch (PDOException $e) {
+            error_log("Error toggling banner status: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    // User Management Functions
+    public function getAllUsers() {
+        try {
+            $stmt = $this->db->prepare("
+                SELECT u.*,
+                    COUNT(DISTINCT s.id) as active_sessions,
+                    COUNT(DISTINCT uaa.app_id) as apps_count
+                FROM users u
+                LEFT JOIN sessions s ON u.id = s.user_id AND s.expires_at > NOW()
+                LEFT JOIN user_app_access uaa ON u.id = uaa.user_id
+                GROUP BY u.id
+                ORDER BY u.last_login DESC NULLS LAST, u.created_at DESC
+            ");
+            $stmt->execute();
+            return $stmt->fetchAll();
+        } catch (PDOException $e) {
+            error_log("Error getting all users: " . $e->getMessage());
+            return [];
+        }
+    }
+
+    public function toggleUserStatus($user_id) {
+        try {
+            $stmt = $this->db->prepare("
+                UPDATE users
+                SET is_active = NOT is_active
+                WHERE id = ?
+                RETURNING is_active
+            ");
+            $stmt->execute([$user_id]);
+            return $stmt->fetch();
+        } catch (PDOException $e) {
+            error_log("Error toggling user status: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function getUserAppAccess($user_id) {
+        try {
+            $stmt = $this->db->prepare("
+                SELECT a.*,
+                    CASE WHEN uaa.id IS NOT NULL THEN TRUE ELSE FALSE END as has_access,
+                    uaa.granted_at,
+                    u.name as granted_by_name
+                FROM applications a
+                LEFT JOIN user_app_access uaa ON a.id = uaa.app_id AND uaa.user_id = ?
+                LEFT JOIN users u ON uaa.granted_by = u.id
+                WHERE a.is_active = TRUE
+                ORDER BY a.app_name
+            ");
+            $stmt->execute([$user_id]);
+            return $stmt->fetchAll();
+        } catch (PDOException $e) {
+            error_log("Error getting user app access: " . $e->getMessage());
+            return [];
+        }
+    }
+
+    public function grantAppAccess($user_id, $app_id, $granted_by) {
+        try {
+            $stmt = $this->db->prepare("
+                INSERT INTO user_app_access (user_id, app_id, granted_by)
+                VALUES (?, ?, ?)
+                ON CONFLICT (user_id, app_id) DO NOTHING
+                RETURNING *
+            ");
+            $stmt->execute([$user_id, $app_id, $granted_by]);
+            return $stmt->fetch();
+        } catch (PDOException $e) {
+            error_log("Error granting app access: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function revokeAppAccess($user_id, $app_id) {
+        try {
+            $stmt = $this->db->prepare("
+                DELETE FROM user_app_access
+                WHERE user_id = ? AND app_id = ?
+            ");
+            return $stmt->execute([$user_id, $app_id]);
+        } catch (PDOException $e) {
+            error_log("Error revoking app access: " . $e->getMessage());
+            return false;
+        }
+    }
 }
