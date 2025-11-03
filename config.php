@@ -622,4 +622,182 @@ class Auth {
             return false;
         }
     }
+
+    // ========================================
+    // CHAT FUNCTIONS
+    // ========================================
+
+    // Get or create conversation between two users
+    public function getOrCreateConversation($user1_id, $user2_id) {
+        try {
+            // Check if conversation already exists
+            $stmt = $this->db->prepare("
+                SELECT c.id
+                FROM chat_conversations c
+                INNER JOIN chat_participants cp1 ON c.id = cp1.conversation_id AND cp1.user_id = ?
+                INNER JOIN chat_participants cp2 ON c.id = cp2.conversation_id AND cp2.user_id = ?
+                WHERE c.is_group = FALSE
+                LIMIT 1
+            ");
+            $stmt->execute([$user1_id, $user2_id]);
+            $existing = $stmt->fetch();
+
+            if ($existing) {
+                return $existing['id'];
+            }
+
+            // Create new conversation
+            $stmt = $this->db->prepare("
+                INSERT INTO chat_conversations (is_group, created_by)
+                VALUES (FALSE, ?)
+                RETURNING id
+            ");
+            $stmt->execute([$user1_id]);
+            $conversation = $stmt->fetch();
+            $conversation_id = $conversation['id'];
+
+            // Add participants
+            $stmt = $this->db->prepare("
+                INSERT INTO chat_participants (conversation_id, user_id)
+                VALUES (?, ?), (?, ?)
+            ");
+            $stmt->execute([$conversation_id, $user1_id, $conversation_id, $user2_id]);
+
+            return $conversation_id;
+        } catch (PDOException $e) {
+            error_log("Error getting/creating conversation: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    // Get user conversations
+    public function getUserConversations($user_id) {
+        try {
+            $stmt = $this->db->prepare("SELECT * FROM sp_get_user_conversations(?)");
+            $stmt->execute([$user_id]);
+            return $stmt->fetchAll();
+        } catch (PDOException $e) {
+            error_log("Error getting user conversations: " . $e->getMessage());
+            return [];
+        }
+    }
+
+    // Get conversation messages
+    public function getConversationMessages($conversation_id, $user_id, $limit = 50, $offset = 0) {
+        try {
+            $stmt = $this->db->prepare("SELECT * FROM sp_get_conversation_messages(?, ?, ?, ?)");
+            $stmt->execute([$conversation_id, $user_id, $limit, $offset]);
+            $messages = $stmt->fetchAll();
+            // Reverse to show oldest first
+            return array_reverse($messages);
+        } catch (PDOException $e) {
+            error_log("Error getting conversation messages: " . $e->getMessage());
+            return [];
+        }
+    }
+
+    // Send message
+    public function sendMessage($conversation_id, $sender_id, $message, $message_type = 'text', $file_data = null, $reply_to = null) {
+        try {
+            $stmt = $this->db->prepare("
+                INSERT INTO chat_messages (conversation_id, sender_id, message, message_type, file_url, file_name, file_size, file_mime_type, metadata, reply_to_message_id)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                RETURNING *
+            ");
+            $stmt->execute([
+                $conversation_id,
+                $sender_id,
+                $message,
+                $message_type,
+                $file_data['url'] ?? null,
+                $file_data['name'] ?? null,
+                $file_data['size'] ?? null,
+                $file_data['mime_type'] ?? null,
+                $file_data['metadata'] ? json_encode($file_data['metadata']) : null,
+                $reply_to
+            ]);
+
+            $new_message = $stmt->fetch();
+
+            // Create notification for other participants
+            $participants = $this->getConversationParticipants($conversation_id);
+            foreach ($participants as $participant) {
+                if ($participant['user_id'] != $sender_id) {
+                    $this->createNotification(
+                        'Nova mensagem no chat',
+                        'Você recebeu uma nova mensagem',
+                        'info',
+                        'user',
+                        $participant['user_id'],
+                        $sender_id
+                    );
+                }
+            }
+
+            return $new_message;
+        } catch (PDOException $e) {
+            error_log("Error sending message: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    // Mark message as read
+    public function markMessageAsRead($message_id, $user_id) {
+        try {
+            $stmt = $this->db->prepare("
+                INSERT INTO chat_message_reads (message_id, user_id)
+                VALUES (?, ?)
+                ON CONFLICT (message_id, user_id) DO NOTHING
+            ");
+            return $stmt->execute([$message_id, $user_id]);
+        } catch (PDOException $e) {
+            error_log("Error marking message as read: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    // Get conversation participants
+    public function getConversationParticipants($conversation_id) {
+        try {
+            $stmt = $this->db->prepare("
+                SELECT cp.*, u.name, u.email, u.photo_url
+                FROM chat_participants cp
+                INNER JOIN users u ON cp.user_id = u.id
+                WHERE cp.conversation_id = ?
+            ");
+            $stmt->execute([$conversation_id]);
+            return $stmt->fetchAll();
+        } catch (PDOException $e) {
+            error_log("Error getting conversation participants: " . $e->getMessage());
+            return [];
+        }
+    }
+
+    // Get total unread messages count
+    public function getTotalUnreadMessagesCount($user_id) {
+        try {
+            $stmt = $this->db->prepare("SELECT sp_count_total_unread_messages(?)");
+            $stmt->execute([$user_id]);
+            $result = $stmt->fetch();
+            return $result ? (int)$result['sp_count_total_unread_messages'] : 0;
+        } catch (PDOException $e) {
+            error_log("Error counting unread messages: " . $e->getMessage());
+            return 0;
+        }
+    }
+
+    // Check if user is participant of conversation
+    public function isConversationParticipant($conversation_id, $user_id) {
+        try {
+            $stmt = $this->db->prepare("
+                SELECT 1 FROM chat_participants
+                WHERE conversation_id = ? AND user_id = ?
+            ");
+            $stmt->execute([$conversation_id, $user_id]);
+            return $stmt->fetch() !== false;
+        } catch (PDOException $e) {
+            error_log("Error checking conversation participant: " . $e->getMessage());
+            return false;
+        }
+    }
 }
