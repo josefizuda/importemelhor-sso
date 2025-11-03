@@ -127,19 +127,30 @@
             </p>
         </div>
 
-        <h2>Passo 3: Verificar Novamente</h2>
+        <h2>Passo 3: Habilitar Chat para Todos os Usuários</h2>
         <div class="step">
             <span class="step-number">4</span>
+            <strong>Habilite o acesso ao chat para todas as roles existentes:</strong><br>
+            <a href="/fix_chat_permissions.php" class="btn" target="_blank">🔓 Habilitar Chat para Todos</a>
+            <p style="margin-top: 10px; color: #666;">
+                Isso vai atualizar todas as roles para que os usuários possam ver o menu de chat.
+            </p>
+        </div>
+
+        <h2>Passo 4: Verificar Novamente</h2>
+        <div class="step">
+            <span class="step-number">5</span>
             <strong>Após executar as migrações, verifique novamente:</strong><br>
             <a href="/check_chat_setup.php" class="btn btn-success" target="_blank">✓ Verificar Novamente</a>
             <p style="margin-top: 10px; color: #666;">Certifique-se de que tudo está configurado corretamente.</p>
         </div>
 
-        <h2>Passo 4: Testar o Chat</h2>
+        <h2>Passo 5: Testar o Chat</h2>
         <div class="step">
-            <span class="step-number">5</span>
+            <span class="step-number">6</span>
             <strong>Se tudo estiver OK, teste o chat:</strong><br>
             <a href="/chat.php" class="btn" target="_blank">💬 Ir para o Chat</a>
+            <p style="margin-top: 10px; color: #666;">Faça logout e login com outros usuários para testar se eles também veem o chat.</p>
         </div>
 
         <div class="success">
@@ -162,6 +173,8 @@
                 <li>Se ver erro "table already exists", pode ignorar - significa que já foi criada antes</li>
                 <li>Se não conseguir acessar as migrações, verifique se está logado como admin principal</li>
                 <li>Se o campo de mensagem não aparecer, certifique-se de que as tabelas foram criadas</li>
+                <li><strong>Se outros usuários não veem o chat:</strong> Execute <a href="/fix_chat_permissions.php">Corrigir Permissões</a></li>
+                <li>Faça logout e login novamente após executar as migrações</li>
                 <li>Limpe o cache do navegador (Ctrl+Shift+R) se algo não carregar corretamente</li>
             </ul>
         </div>
@@ -169,6 +182,7 @@
         <h2>Todas as Ferramentas</h2>
         <div style="margin-top: 20px;">
             <a href="/check_chat_setup.php" class="btn btn-success">✓ Verificar Configuração</a>
+            <a href="/fix_chat_permissions.php" class="btn">🔓 Corrigir Permissões</a>
             <a href="/database/run_migration.php" class="btn">📦 Ver Todas as Migrações</a>
             <a href="/chat.php" class="btn">💬 Ir para o Chat</a>
             <a href="/dashboard.php" class="btn">🏠 Voltar ao Dashboard</a>
