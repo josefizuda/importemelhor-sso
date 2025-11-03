@@ -219,9 +219,23 @@ $applications = $auth->getUserApplications($session['user_id']);
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">URL da Imagem *</label>
-                    <input type="url" name="image_url" id="image_url" class="form-input" required placeholder="https://...">
-                    <small style="color: var(--color-gray-500); font-size: 0.875rem;">Tamanho recomendado: 1200x300px</small>
+                    <label class="form-label">Imagem do Banner *</label>
+                    <div style="display: flex; gap: 1rem; margin-bottom: 0.5rem;">
+                        <button type="button" onclick="document.getElementById('imageUpload').click()" class="btn btn-outline" style="flex: 1;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="17 8 12 3 7 8"/>
+                                <line x1="12" y1="3" x2="12" y2="15"/>
+                            </svg>
+                            Upload Imagem
+                        </button>
+                        <input type="file" id="imageUpload" accept="image/*" style="display: none;" onchange="handleImageUpload(this)">
+                    </div>
+                    <input type="url" name="image_url" id="image_url" class="form-input" required placeholder="https:// ou faça upload acima">
+                    <small style="color: var(--color-gray-500); font-size: 0.875rem;">Tamanho recomendado: 1200x300px. Max: 5MB</small>
+                    <div id="uploadProgress" style="display: none; margin-top: 0.5rem; color: var(--color-info);">
+                        Uploading...
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -308,6 +322,47 @@ $applications = $auth->getUserApplications($session['user_id']);
             document.getElementById('bannerModal').style.display = 'none';
         }
 
+        // Image upload handler
+        async function handleImageUpload(input) {
+            if (!input.files || !input.files[0]) return;
+
+            const file = input.files[0];
+            const formData = new FormData();
+            formData.append('image', file);
+
+            const progressDiv = document.getElementById('uploadProgress');
+            progressDiv.style.display = 'block';
+            progressDiv.textContent = 'Uploading...';
+
+            try {
+                const response = await fetch('/admin/upload_image.php', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    // Set the image URL in the input
+                    const fullUrl = window.location.origin + result.url;
+                    document.getElementById('image_url').value = fullUrl;
+                    progressDiv.textContent = 'Upload concluído!';
+                    progressDiv.style.color = 'var(--color-success)';
+
+                    setTimeout(() => {
+                        progressDiv.style.display = 'none';
+                    }, 2000);
+                } else {
+                    progressDiv.textContent = 'Erro: ' + (result.error || 'Upload failed');
+                    progressDiv.style.color = 'var(--color-error)';
+                }
+            } catch (error) {
+                progressDiv.textContent = 'Erro ao fazer upload';
+                progressDiv.style.color = 'var(--color-error)';
+                console.error('Upload error:', error);
+            }
+        }
+
         // Close modal when clicking outside
         document.getElementById('bannerModal').addEventListener('click', function(e) {
             if (e.target === this) {
@@ -315,5 +370,6 @@ $applications = $auth->getUserApplications($session['user_id']);
             }
         });
     </script>
+    <script src="/public/js/main.js"></script>
 </body>
 </html>

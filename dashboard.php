@@ -218,6 +218,7 @@ $pageTitle = 'Dashboard';
     </div>
 
     <!-- Scripts -->
+    <script src="/public/js/main.js"></script>
     <script src="/public/js/carousel.js"></script>
 </body>
 </html>
