@@ -377,4 +377,114 @@ class Auth {
             return false;
         }
     }
+
+    // Role Management Functions
+    public function getAllRoles() {
+        try {
+            $stmt = $this->db->prepare("
+                SELECT r.*,
+                    COUNT(DISTINCT u.id) as users_count
+                FROM user_roles r
+                LEFT JOIN users u ON r.id = u.role_id
+                GROUP BY r.id
+                ORDER BY r.id
+            ");
+            $stmt->execute();
+            return $stmt->fetchAll();
+        } catch (PDOException $e) {
+            error_log("Error getting all roles: " . $e->getMessage());
+            return [];
+        }
+    }
+
+    public function getUserRole($user_id) {
+        try {
+            $stmt = $this->db->prepare("
+                SELECT r.*
+                FROM user_roles r
+                INNER JOIN users u ON r.id = u.role_id
+                WHERE u.id = ?
+            ");
+            $stmt->execute([$user_id]);
+            return $stmt->fetch();
+        } catch (PDOException $e) {
+            error_log("Error getting user role: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function updateUserRole($user_id, $role_id) {
+        try {
+            $stmt = $this->db->prepare("
+                UPDATE users
+                SET role_id = ?
+                WHERE id = ?
+            ");
+            return $stmt->execute([$role_id, $user_id]);
+        } catch (PDOException $e) {
+            error_log("Error updating user role: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function checkPermission($user_id, $permission) {
+        try {
+            $stmt = $this->db->prepare("SELECT sp_check_user_permission(?, ?)");
+            $stmt->execute([$user_id, $permission]);
+            $result = $stmt->fetch();
+            return $result ? $result['sp_check_user_permission'] : false;
+        } catch (PDOException $e) {
+            error_log("Error checking permission: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function createRole($name, $slug, $description, $permissions) {
+        try {
+            $stmt = $this->db->prepare("
+                INSERT INTO user_roles (name, slug, description, is_admin, can_manage_users, can_manage_banners, can_manage_apps, can_access_external_sites)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                RETURNING *
+            ");
+            $stmt->execute([
+                $name,
+                $slug,
+                $description,
+                $permissions['is_admin'] ?? false,
+                $permissions['can_manage_users'] ?? false,
+                $permissions['can_manage_banners'] ?? false,
+                $permissions['can_manage_apps'] ?? false,
+                $permissions['can_access_external_sites'] ?? false
+            ]);
+            return $stmt->fetch();
+        } catch (PDOException $e) {
+            error_log("Error creating role: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function updateRole($role_id, $name, $description, $permissions) {
+        try {
+            $stmt = $this->db->prepare("
+                UPDATE user_roles
+                SET name = ?, description = ?, is_admin = ?, can_manage_users = ?, can_manage_banners = ?, can_manage_apps = ?, can_access_external_sites = ?
+                WHERE id = ?
+                RETURNING *
+            ");
+            $stmt->execute([
+                $name,
+                $description,
+                $permissions['is_admin'] ?? false,
+                $permissions['can_manage_users'] ?? false,
+                $permissions['can_manage_banners'] ?? false,
+                $permissions['can_manage_apps'] ?? false,
+                $permissions['can_access_external_sites'] ?? false,
+                $role_id
+            ]);
+            return $stmt->fetch();
+        } catch (PDOException $e) {
+            error_log("Error updating role: " . $e->getMessage());
+            return false;
+        }
+    }
 }
