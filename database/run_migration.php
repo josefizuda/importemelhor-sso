@@ -8,7 +8,7 @@
 require_once '../config.php';
 
 // Security check - only allow admin
-session_start();
+// Note: session_start() is already called in config.php
 $auth = new Auth();
 
 if (!isset($_COOKIE['sso_token'])) {
