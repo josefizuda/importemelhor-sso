@@ -118,7 +118,7 @@ if (isset($auth) && isset($session)) {
                 <div class="user-name"><?php echo htmlspecialchars(explode(' ', $session['name'])[0]); ?></div>
                 <div class="user-role">
                     <?php
-                    $isAdmin = ($session['email'] === 'app@importemelhor.com.br');
+                    $isAdmin = isset($auth) && isset($session) ? $auth->isAdmin($session['user_id']) : false;
                     echo $isAdmin ? 'Administrador' : 'Usuário';
                     ?>
                 </div>

@@ -28,7 +28,7 @@ error_log("✅ Usuário logado: " . $session['email']);
 
 $applications = $auth->getUserApplications($session['user_id']);
 $firstName = explode(' ', $session['name'])[0];
-$isAdmin = ($session['email'] === 'app@importemelhor.com.br');
+$isAdmin = ($auth->isAdmin($session['user_id']));
 
 $pageTitle = 'Ferramentas';
 ?>
