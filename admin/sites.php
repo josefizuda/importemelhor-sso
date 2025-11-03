@@ -34,13 +34,13 @@ $site = $_GET['site'] ?? 'main';
 
 $sites = [
     'main' => [
-        'name' => 'Importe Melhor',
-        'url' => 'https://importemelhor.com.br',
+        'name' => 'Importe Melhor - WP Admin',
+        'url' => 'https://importemelhor.com.br/wp-admin',
         'icon' => '🏠'
     ],
     'conteudo' => [
-        'name' => 'Conteúdo Importe Melhor',
-        'url' => 'https://conteudo.importemelhor.com.br',
+        'name' => 'Conteúdo Importe Melhor - WP Admin',
+        'url' => 'https://conteudo.importemelhor.com.br/wp-admin',
         'icon' => '📝'
     ]
 ];

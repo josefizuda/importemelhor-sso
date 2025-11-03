@@ -487,4 +487,121 @@ class Auth {
             return false;
         }
     }
+
+    // Notification Management Functions
+    public function createNotification($title, $message, $type, $target_type, $target_value, $created_by, $expires_at = null) {
+        try {
+            $stmt = $this->db->prepare("
+                INSERT INTO notifications (title, message, type, target_type, target_value, created_by, expires_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                RETURNING *
+            ");
+            $stmt->execute([$title, $message, $type, $target_type, $target_value, $created_by, $expires_at]);
+            return $stmt->fetch();
+        } catch (PDOException $e) {
+            error_log("Error creating notification: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function getUserNotifications($user_id, $include_read = false) {
+        try {
+            $stmt = $this->db->prepare("SELECT * FROM sp_get_user_notifications(?, ?)");
+            $stmt->execute([$user_id, $include_read]);
+            return $stmt->fetchAll();
+        } catch (PDOException $e) {
+            error_log("Error getting user notifications: " . $e->getMessage());
+            return [];
+        }
+    }
+
+    public function getUnreadNotificationCount($user_id) {
+        try {
+            $stmt = $this->db->prepare("SELECT sp_count_unread_notifications(?)");
+            $stmt->execute([$user_id]);
+            $result = $stmt->fetch();
+            return $result ? (int)$result['sp_count_unread_notifications'] : 0;
+        } catch (PDOException $e) {
+            error_log("Error counting unread notifications: " . $e->getMessage());
+            return 0;
+        }
+    }
+
+    public function markNotificationAsRead($notification_id, $user_id) {
+        try {
+            $stmt = $this->db->prepare("
+                INSERT INTO notification_reads (notification_id, user_id)
+                VALUES (?, ?)
+                ON CONFLICT (notification_id, user_id) DO NOTHING
+                RETURNING *
+            ");
+            $stmt->execute([$notification_id, $user_id]);
+            return true;
+        } catch (PDOException $e) {
+            error_log("Error marking notification as read: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function getAllNotifications() {
+        try {
+            $stmt = $this->db->prepare("
+                SELECT n.*, u.name as created_by_name,
+                    COUNT(DISTINCT nr.id) as read_count
+                FROM notifications n
+                LEFT JOIN users u ON n.created_by = u.id
+                LEFT JOIN notification_reads nr ON n.id = nr.notification_id
+                GROUP BY n.id, u.name
+                ORDER BY n.created_at DESC
+            ");
+            $stmt->execute();
+            return $stmt->fetchAll();
+        } catch (PDOException $e) {
+            error_log("Error getting all notifications: " . $e->getMessage());
+            return [];
+        }
+    }
+
+    public function deleteNotification($id) {
+        try {
+            $stmt = $this->db->prepare("DELETE FROM notifications WHERE id = ?");
+            return $stmt->execute([$id]);
+        } catch (PDOException $e) {
+            error_log("Error deleting notification: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    // User Edit Functions
+    public function updateUser($user_id, $name, $job_title, $department) {
+        try {
+            $stmt = $this->db->prepare("
+                UPDATE users
+                SET name = ?, job_title = ?, department = ?
+                WHERE id = ?
+                RETURNING *
+            ");
+            $stmt->execute([$name, $job_title, $department, $user_id]);
+            return $stmt->fetch();
+        } catch (PDOException $e) {
+            error_log("Error updating user: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function getUserById($user_id) {
+        try {
+            $stmt = $this->db->prepare("
+                SELECT u.*, r.name as role_name
+                FROM users u
+                LEFT JOIN user_roles r ON u.role_id = r.id
+                WHERE u.id = ?
+            ");
+            $stmt->execute([$user_id]);
+            return $stmt->fetch();
+        } catch (PDOException $e) {
+            error_log("Error getting user by id: " . $e->getMessage());
+            return false;
+        }
+    }
 }

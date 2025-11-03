@@ -57,6 +57,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $message = $result ? 'Role do usuário atualizada com sucesso!' : 'Erro ao atualizar role.';
                 $messageType = $result ? 'success' : 'error';
                 break;
+
+            case 'edit_user':
+                $result = $auth->updateUser(
+                    (int)$_POST['user_id'],
+                    $_POST['name'],
+                    $_POST['job_title'],
+                    $_POST['department']
+                );
+                if ($result && isset($_POST['role_id']) && !empty($_POST['role_id'])) {
+                    $auth->updateUserRole((int)$_POST['user_id'], (int)$_POST['role_id']);
+                }
+                $message = $result ? 'Usuário atualizado com sucesso!' : 'Erro ao atualizar usuário.';
+                $messageType = $result ? 'success' : 'error';
+                break;
         }
     }
 }
@@ -212,6 +226,9 @@ $allApps = $stmt->fetchAll();
                                 </td>
                                 <td>
                                     <div style="display: flex; gap: 0.5rem;">
+                                        <button onclick='editUser(<?php echo json_encode($user); ?>)' class="btn btn-outline" style="padding: 0.5rem; font-size: 0.875rem;">
+                                            Editar
+                                        </button>
                                         <button onclick="managePermissions(<?php echo $user['id']; ?>, '<?php echo htmlspecialchars($user['name']); ?>')" class="btn btn-outline" style="padding: 0.5rem; font-size: 0.875rem;">
                                             Permissões
                                         </button>
@@ -235,23 +252,92 @@ $allApps = $stmt->fetchAll();
         </div>
     </div>
 
+    <!-- Edit User Modal -->
+    <div id="editUserModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center;">
+        <div style="background: var(--bg-primary); border-radius: var(--radius-lg); width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto;">
+            <div style="padding: 1.5rem; border-bottom: 1px solid var(--border-color);">
+                <h2>Editar Usuário</h2>
+            </div>
+            <form method="POST" style="padding: 1.5rem;">
+                <input type="hidden" name="action" value="edit_user">
+                <input type="hidden" name="user_id" id="edit_user_id">
+
+                <div class="form-group">
+                    <label class="form-label">Nome *</label>
+                    <input type="text" name="name" id="edit_name" class="form-input" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Cargo</label>
+                    <input type="text" name="job_title" id="edit_job_title" class="form-input">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Departamento</label>
+                    <input type="text" name="department" id="edit_department" class="form-input">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Role/Tipo de Usuário</label>
+                    <select name="role_id" id="edit_role_id" class="form-input">
+                        <option value="">Selecione...</option>
+                        <?php foreach ($roles as $role): ?>
+                        <option value="<?php echo $role['id']; ?>">
+                            <?php echo htmlspecialchars($role['name']); ?>
+                        </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
+                    <button type="button" onclick="closeEditModal()" class="btn btn-outline">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        Salvar Alterações
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Permissions Modal -->
     <div id="permissionsModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center;">
-        <div style="background: white; border-radius: var(--radius-lg); width: 90%; max-width: 700px; max-height: 90vh; overflow-y: auto;">
-            <div style="padding: 1.5rem; border-bottom: 1px solid var(--color-gray-200);">
+        <div style="background: var(--bg-primary); border-radius: var(--radius-lg); width: 90%; max-width: 700px; max-height: 90vh; overflow-y: auto;">
+            <div style="padding: 1.5rem; border-bottom: 1px solid var(--border-color);">
                 <h2 id="modalTitle">Gerenciar Permissões</h2>
-                <p style="color: var(--color-gray-500); font-size: 0.875rem; margin-top: 0.5rem;" id="modalSubtitle"></p>
+                <p style="color: var(--text-secondary); font-size: 0.875rem; margin-top: 0.5rem;" id="modalSubtitle"></p>
             </div>
             <div id="permissionsContent" style="padding: 1.5rem;">
                 <!-- Content will be loaded dynamically -->
             </div>
-            <div style="padding: 1.5rem; border-top: 1px solid var(--color-gray-200); display: flex; justify-content: flex-end;">
+            <div style="padding: 1.5rem; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end;">
                 <button onclick="closePermissionsModal()" class="btn btn-outline">Fechar</button>
             </div>
         </div>
     </div>
 
     <script>
+        function editUser(user) {
+            document.getElementById('edit_user_id').value = user.id;
+            document.getElementById('edit_name').value = user.name;
+            document.getElementById('edit_job_title').value = user.job_title || '';
+            document.getElementById('edit_department').value = user.department || '';
+            document.getElementById('edit_role_id').value = user.role_id || '';
+            document.getElementById('editUserModal').style.display = 'flex';
+        }
+
+        function closeEditModal() {
+            document.getElementById('editUserModal').style.display = 'none';
+        }
+
+        // Close edit modal when clicking outside
+        document.getElementById('editUserModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeEditModal();
+            }
+        });
+
         async function managePermissions(userId, userName) {
             document.getElementById('modalSubtitle').textContent = userName;
             document.getElementById('permissionsModal').style.display = 'flex';
@@ -264,14 +350,14 @@ $allApps = $stmt->fetchAll();
 
             data.forEach(app => {
                 html += `
-                    <div style="padding: 1rem; border: 1px solid var(--color-gray-200); border-radius: var(--radius); display: flex; align-items: center; justify-content: space-between;">
+                    <div style="padding: 1rem; border: 1px solid var(--border-color); border-radius: var(--radius); display: flex; align-items: center; justify-content: space-between;">
                         <div style="display: flex; align-items: center; gap: 1rem;">
                             <div style="font-size: 2rem;">${app.icon_emoji}</div>
                             <div>
                                 <div style="font-weight: 600;">${app.app_name}</div>
-                                <div style="font-size: 0.875rem; color: var(--color-gray-500);">${app.app_description || ''}</div>
+                                <div style="font-size: 0.875rem; color: var(--text-secondary);">${app.app_description || ''}</div>
                                 ${app.has_access && app.granted_at ? `
-                                    <div style="font-size: 0.75rem; color: var(--color-gray-400); margin-top: 0.25rem;">
+                                    <div style="font-size: 0.75rem; color: var(--text-tertiary); margin-top: 0.25rem;">
                                         Concedido em ${new Date(app.granted_at).toLocaleDateString('pt-BR')}
                                         ${app.granted_by_name ? ' por ' + app.granted_by_name : ''}
                                     </div>
