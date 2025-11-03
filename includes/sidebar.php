@@ -2,19 +2,10 @@
 <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
         <a href="/dashboard.php" class="logo-wrapper">
-            <svg class="logo-img" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                    <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" style="stop-color:#0423b2;stop-opacity:1" />
-                        <stop offset="100%" style="stop-color:#83f100;stop-opacity:1" />
-                    </linearGradient>
-                </defs>
-                <!-- Ícone de navio estilizado -->
-                <path d="M 50 20 L 30 45 L 70 45 Z" fill="url(#logoGradient)"/>
-                <path d="M 20 50 L 80 50 L 75 70 L 25 70 Z" fill="url(#logoGradient)" opacity="0.8"/>
-                <path d="M 25 75 Q 50 85 75 75" stroke="url(#logoGradient)" stroke-width="3" fill="none"/>
-            </svg>
-            <span class="logo-text">Importe Melhor</span>
+            <img src="https://conteudo.importemelhor.com.br/wp-content/uploads/2025/11/LogoHazul.png"
+                 alt="Importe Melhor"
+                 class="logo-img-real"
+                 style="max-width: 180px; height: auto;">
         </a>
     </div>
 
@@ -23,14 +14,14 @@
         <div class="menu-section">
             <h6 class="menu-section-title">Menu Principal</h6>
 
-            <a href="/dashboard.php" class="menu-item <?php echo (!isset($_GET['page']) || $_GET['page'] === 'dashboard') ? 'active' : ''; ?>">
+            <a href="/dashboard.php" class="menu-item <?php echo (basename($_SERVER['PHP_SELF']) === 'dashboard.php') ? 'active' : ''; ?>">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
                 </svg>
                 <span>Dashboard</span>
             </a>
 
-            <a href="/dashboard.php?page=apps" class="menu-item <?php echo (isset($_GET['page']) && $_GET['page'] === 'apps') ? 'active' : ''; ?>">
+            <a href="/apps.php" class="menu-item <?php echo (basename($_SERVER['PHP_SELF']) === 'apps.php') ? 'active' : ''; ?>">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <rect x="3" y="3" width="7" height="7"/>
                     <rect x="14" y="3" width="7" height="7"/>
@@ -90,15 +81,7 @@
         <div class="menu-section">
             <h6 class="menu-section-title">Configurações</h6>
 
-            <a href="/dashboard.php?page=profile" class="menu-item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                    <circle cx="12" cy="7" r="4"/>
-                </svg>
-                <span>Perfil</span>
-            </a>
-
-            <a href="/dashboard.php?page=settings" class="menu-item">
+            <a href="/settings.php" class="menu-item <?php echo (basename($_SERVER['PHP_SELF']) === 'settings.php') ? 'active' : ''; ?>">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="12" cy="12" r="3"/>
                     <path d="M12 1v6m0 6v6m5.66-13.66l-1.42 1.42m-8.49 8.49l-1.42 1.42M23 12h-6m-6 0H1m18.66 5.66l-1.42-1.42m-8.49-8.49l-1.42-1.42"/>

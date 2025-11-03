@@ -2,7 +2,7 @@
    Importe Melhor SSO - Main Stylesheet
    ========================================================================== */
 
-/* Variáveis CSS */
+/* Variáveis CSS - Light Mode */
 :root {
     /* Cores Primárias - Importe Melhor */
     --color-primary: #0423b2;
@@ -11,7 +11,7 @@
     --color-accent: #83f100;
     --color-accent-dark: #6bc000;
 
-    /* Cores Neutras */
+    /* Cores Neutras - Light */
     --color-white: #ffffff;
     --color-gray-50: #f9fafb;
     --color-gray-100: #f3f4f6;
@@ -29,6 +29,13 @@
     --color-warning: #f59e0b;
     --color-error: #ef4444;
     --color-info: #3b82f6;
+
+    /* Background e Text */
+    --bg-primary: #ffffff;
+    --bg-secondary: #f9fafb;
+    --text-primary: #111827;
+    --text-secondary: #6b7280;
+    --border-color: #e5e7eb;
 
     /* Sombras */
     --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
@@ -48,6 +55,35 @@
     --transition: all 0.3s ease;
 }
 
+/* Dark Mode */
+[data-theme="dark"] {
+    /* Cores Neutras - Dark */
+    --color-gray-50: #1a1a1a;
+    --color-gray-100: #2d2d2d;
+    --color-gray-200: #3f3f3f;
+    --color-gray-300: #525252;
+    --color-gray-400: #737373;
+    --color-gray-500: #a3a3a3;
+    --color-gray-600: #d4d4d4;
+    --color-gray-700: #e5e5e5;
+    --color-gray-800: #f5f5f5;
+    --color-gray-900: #fafafa;
+
+    /* Background e Text */
+    --bg-primary: #1a1a1a;
+    --bg-secondary: #0f0f0f;
+    --text-primary: #fafafa;
+    --text-secondary: #a3a3a3;
+    --border-color: #3f3f3f;
+
+    /* Sombras Dark */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.5);
+    --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.5), 0 1px 2px -1px rgb(0 0 0 / 0.5);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.5), 0 2px 4px -2px rgb(0 0 0 / 0.5);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.7), 0 4px 6px -4px rgb(0 0 0 / 0.5);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.7), 0 8px 10px -6px rgb(0 0 0 / 0.5);
+}
+
 /* Reset e Base */
 * {
     margin: 0;
@@ -63,17 +99,18 @@ html {
 
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    background: var(--color-gray-50);
-    color: var(--color-gray-900);
+    background: var(--bg-secondary);
+    color: var(--text-primary);
     line-height: 1.6;
     min-height: 100vh;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Typography */
 h1, h2, h3, h4, h5, h6 {
     font-weight: 600;
     line-height: 1.2;
-    color: var(--color-gray-900);
+    color: var(--text-primary);
 }
 
 h1 { font-size: 2.25rem; }
@@ -110,8 +147,8 @@ a:hover {
     right: 0;
     left: 280px;
     height: 70px;
-    background: var(--color-white);
-    border-bottom: 1px solid var(--color-gray-200);
+    background: var(--bg-primary);
+    border-bottom: 1px solid var(--border-color);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -204,8 +241,8 @@ a:hover {
     top: 0;
     bottom: 0;
     width: 280px;
-    background: var(--color-white);
-    border-right: 1px solid var(--color-gray-200);
+    background: var(--bg-primary);
+    border-right: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
     z-index: 1000;
@@ -340,11 +377,12 @@ a:hover {
 
 /* Cards */
 .card {
-    background: var(--color-white);
+    background: var(--bg-primary);
     border-radius: var(--radius-lg);
     padding: 1.5rem;
     box-shadow: var(--shadow);
     transition: var(--transition);
+    border: 1px solid var(--border-color);
 }
 
 .card:hover {
@@ -361,11 +399,11 @@ a:hover {
 .card-title {
     font-size: 1.125rem;
     font-weight: 600;
-    color: var(--color-gray-900);
+    color: var(--text-primary);
 }
 
 .card-body {
-    color: var(--color-gray-600);
+    color: var(--text-secondary);
 }
 
 /* Grid System */
@@ -381,11 +419,12 @@ a:hover {
 
 /* Stats Cards */
 .stats-card {
-    background: var(--color-white);
+    background: var(--bg-primary);
     border-radius: var(--radius-lg);
     padding: 1.5rem;
     box-shadow: var(--shadow);
     transition: var(--transition);
+    border: 1px solid var(--border-color);
 }
 
 .stats-card:hover {
@@ -616,13 +655,13 @@ a:hover {
 }
 
 .app-card {
-    background: var(--color-white);
+    background: var(--bg-primary);
     border-radius: var(--radius-lg);
     padding: 1.5rem;
     box-shadow: var(--shadow);
     text-decoration: none;
     transition: var(--transition);
-    border: 2px solid transparent;
+    border: 2px solid var(--border-color);
 }
 
 .app-card:hover {
@@ -646,22 +685,23 @@ a:hover {
 .app-name {
     font-size: 1.125rem;
     font-weight: 600;
-    color: var(--color-gray-900);
+    color: var(--text-primary);
     margin-bottom: 0.5rem;
 }
 
 .app-description {
     font-size: 0.875rem;
-    color: var(--color-gray-600);
+    color: var(--text-secondary);
     line-height: 1.5;
 }
 
 /* Tables */
 .table-container {
-    background: var(--color-white);
+    background: var(--bg-primary);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow);
     overflow: hidden;
+    border: 1px solid var(--border-color);
 }
 
 .table {
@@ -670,7 +710,7 @@ a:hover {
 }
 
 .table thead {
-    background: var(--color-gray-50);
+    background: var(--color-gray-100);
 }
 
 .table th {
@@ -746,13 +786,40 @@ a:hover {
 .gap-4 { gap: 1rem; }
 
 /* Responsive */
+/* Dark Mode Toggle */
+.theme-toggle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: transparent;
+    border: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--transition);
+    color: var(--text-secondary);
+}
+
+.theme-toggle:hover {
+    background: var(--color-gray-100);
+    border-color: var(--color-gray-300);
+}
+
+.theme-toggle svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* Mobile Menu Styles */
 @media (max-width: 1024px) {
     .sidebar {
         transform: translateX(-100%);
     }
 
-    .sidebar.active {
+    .sidebar.mobile-open {
         transform: translateX(0);
+        box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
     }
 
     .header {
