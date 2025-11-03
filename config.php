@@ -546,12 +546,15 @@ class Auth {
     public function getAllNotifications() {
         try {
             $stmt = $this->db->prepare("
-                SELECT n.*, u.name as created_by_name,
-                    COUNT(DISTINCT nr.id) as read_count
+                SELECT n.id, n.title, n.message, n.type, n.target_type, n.target_value,
+                       n.created_by, n.created_at, n.expires_at,
+                       u.name as created_by_name,
+                       COUNT(DISTINCT nr.id) as read_count
                 FROM notifications n
                 LEFT JOIN users u ON n.created_by = u.id
                 LEFT JOIN notification_reads nr ON n.id = nr.notification_id
-                GROUP BY n.id, u.name
+                GROUP BY n.id, n.title, n.message, n.type, n.target_type, n.target_value,
+                         n.created_by, n.created_at, n.expires_at, u.name
                 ORDER BY n.created_at DESC
             ");
             $stmt->execute();

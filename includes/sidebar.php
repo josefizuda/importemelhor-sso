@@ -31,6 +31,20 @@
                 <span>Ferramentas</span>
                 <span class="menu-badge"><?php echo count($applications ?? []); ?></span>
             </a>
+
+            <a href="/chat.php" class="menu-item <?php echo (basename($_SERVER['PHP_SELF']) === 'chat.php') ? 'active' : ''; ?>">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+                <span>Chat</span>
+                <?php
+                if (isset($auth) && isset($session)) {
+                    $unreadChats = $auth->getTotalUnreadMessagesCount($session['user_id']);
+                    if ($unreadChats > 0):
+                ?>
+                <span class="menu-badge"><?php echo $unreadChats; ?></span>
+                <?php endif; } ?>
+            </a>
         </div>
 
         <?php

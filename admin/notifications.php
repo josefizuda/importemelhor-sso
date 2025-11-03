@@ -156,16 +156,18 @@ sort($departments);
                                     </td>
                                     <td>
                                         <?php
-                                        if ($notification['target_type'] === 'all') {
+                                        $target_type = $notification['target_type'] ?? 'all';
+                                        $target_value = $notification['target_value'] ?? '';
+                                        if ($target_type === 'all') {
                                             echo '<span class="badge badge-primary">Todos</span>';
-                                        } elseif ($notification['target_type'] === 'department') {
-                                            echo '<span class="badge badge-secondary">Depto: ' . htmlspecialchars($notification['target_value']) . '</span>';
+                                        } elseif ($target_type === 'department') {
+                                            echo '<span class="badge badge-secondary">Depto: ' . htmlspecialchars($target_value) . '</span>';
                                         } else {
-                                            echo '<span class="badge badge-secondary">Usuário ID: ' . htmlspecialchars($notification['target_value']) . '</span>';
+                                            echo '<span class="badge badge-secondary">Usuário ID: ' . htmlspecialchars($target_value) . '</span>';
                                         }
                                         ?>
                                     </td>
-                                    <td><?php echo $notification['read_count']; ?> leituras</td>
+                                    <td><?php echo intval($notification['read_count'] ?? 0); ?> leituras</td>
                                     <td><?php echo htmlspecialchars($notification['created_by_name'] ?? 'Sistema'); ?></td>
                                     <td><?php echo date('d/m/Y H:i', strtotime($notification['created_at'])); ?></td>
                                     <td>
