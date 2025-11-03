@@ -44,20 +44,27 @@ $migrations = [
         'file' => 'chat_migration.sql',
         'name' => 'Chat System',
         'items' => [
-            'chat_conversations table',
-            'chat_participants table',
-            'chat_messages table',
-            'chat_message_reads table',
+            'conversations table',
+            'conversation_participants table',
+            'messages table',
+            'message_reads table',
             'sp_get_user_conversations() function',
             'sp_get_conversation_messages() function',
             'sp_count_total_unread_messages() function',
             'Triggers and indexes'
         ]
+    ],
+    'chat_permission' => [
+        'file' => 'add_chat_permission.sql',
+        'name' => 'Chat Permission',
+        'items' => [
+            'can_access_chat column in user_roles table'
+        ]
     ]
 ];
 
 if (!isset($migrations[$migration])) {
-    die('Invalid migration type. Use: ?type=notifications or ?type=chat');
+    die('Invalid migration type. Use: ?type=notifications, ?type=chat, or ?type=chat_permission');
 }
 
 $config = $migrations[$migration];
@@ -83,11 +90,14 @@ try {
 }
 
 echo "</pre>";
-echo '<h3>Run Migrations:</h3>';
-echo '<a href="?type=notifications" style="margin-right: 1rem; padding: 0.5rem 1rem; background: #0423b2; color: white; text-decoration: none; border-radius: 4px; display: inline-block;">Run Notifications Migration</a>';
-echo '<a href="?type=chat" style="margin-right: 1rem; padding: 0.5rem 1rem; background: #0423b2; color: white; text-decoration: none; border-radius: 4px; display: inline-block;">Run Chat Migration</a>';
-echo '<br><br>';
+echo '<h3>Available Migrations:</h3>';
+echo '<div style="margin-bottom: 2rem;">';
+echo '<a href="?type=notifications" style="margin-right: 1rem; margin-bottom: 0.5rem; padding: 0.75rem 1.5rem; background: #0423b2; color: white; text-decoration: none; border-radius: 4px; display: inline-block;">📢 Run Notifications Migration</a>';
+echo '<a href="?type=chat" style="margin-right: 1rem; margin-bottom: 0.5rem; padding: 0.75rem 1.5rem; background: #0423b2; color: white; text-decoration: none; border-radius: 4px; display: inline-block;">💬 Run Chat System Migration</a>';
+echo '<a href="?type=chat_permission" style="margin-right: 1rem; margin-bottom: 0.5rem; padding: 0.75rem 1.5rem; background: #0423b2; color: white; text-decoration: none; border-radius: 4px; display: inline-block;">🔐 Add Chat Permission</a>';
+echo '</div>';
 echo '<h3>Quick Links:</h3>';
+echo '<a href="/check_chat_setup.php" style="margin-right: 1rem; padding: 0.5rem 1rem; background: #28a745; color: white; text-decoration: none; border-radius: 4px; display: inline-block;">✓ Check Chat Setup</a>';
 echo '<a href="/notifications.php" style="margin-right: 1rem;">Go to Notifications</a>';
 echo '<a href="/chat.php">Go to Chat</a>';
 ?>
