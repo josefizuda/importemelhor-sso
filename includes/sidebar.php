@@ -59,20 +59,21 @@
                 <span>Usuários</span>
             </a>
 
-            <a href="/admin/apps.php" class="menu-item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="3"/>
-                    <path d="M12 1v6m0 6v6m5.66-13.66l-1.42 1.42m-8.49 8.49l-1.42 1.42M23 12h-6m-6 0H1m18.66 5.66l-1.42-1.42m-8.49-8.49l-1.42-1.42"/>
-                </svg>
-                <span>Aplicações</span>
-            </a>
-
-            <a href="/admin/permissions.php" class="menu-item">
+            <a href="/admin/roles.php" class="menu-item">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
                     <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                 </svg>
-                <span>Permissões</span>
+                <span>Roles/Permissões</span>
+            </a>
+
+            <a href="/admin/sites.php" class="menu-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="2" y1="12" x2="22" y2="12"/>
+                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                </svg>
+                <span>Sites IM</span>
             </a>
         </div>
         <?php endif; ?>

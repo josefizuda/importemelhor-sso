@@ -788,6 +788,7 @@ a:hover {
 /* Responsive */
 /* Dark Mode Toggle */
 .theme-toggle {
+    position: relative;
     width: 40px;
     height: 40px;
     border-radius: 50%;
@@ -797,18 +798,39 @@ a:hover {
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: var(--transition);
+    transition: all 0.3s ease;
     color: var(--text-secondary);
+    overflow: hidden;
 }
 
 .theme-toggle:hover {
     background: var(--color-gray-100);
-    border-color: var(--color-gray-300);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    transform: scale(1.1);
+}
+
+.theme-toggle:active {
+    transform: scale(0.95);
 }
 
 .theme-toggle svg {
     width: 20px;
     height: 20px;
+    transition: transform 0.3s ease;
+}
+
+.theme-toggle:hover svg {
+    transform: rotate(20deg);
+}
+
+[data-theme="dark"] .theme-toggle {
+    color: var(--color-accent);
+}
+
+[data-theme="dark"] .theme-toggle:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
 }
 
 /* Mobile Menu Styles */

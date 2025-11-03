@@ -51,12 +51,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $message = $result ? 'Acesso revogado com sucesso!' : 'Erro ao revogar acesso.';
                 $messageType = $result ? 'success' : 'error';
                 break;
+
+            case 'change_role':
+                $result = $auth->updateUserRole((int)$_POST['user_id'], (int)$_POST['role_id']);
+                $message = $result ? 'Role do usuário atualizada com sucesso!' : 'Erro ao atualizar role.';
+                $messageType = $result ? 'success' : 'error';
+                break;
         }
     }
 }
 
 $users = $auth->getAllUsers();
 $applications = $auth->getUserApplications($session['user_id']);
+$roles = $auth->getAllRoles();
 
 // Get all applications for permission management
 $db = Database::getInstance()->getConnection();
