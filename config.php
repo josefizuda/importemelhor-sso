@@ -429,6 +429,15 @@ class Auth {
 
     public function checkPermission($user_id, $permission) {
         try {
+            // Admin principal sempre tem acesso a tudo
+            $stmt = $this->db->prepare("SELECT email FROM users WHERE id = ?");
+            $stmt->execute([$user_id]);
+            $user = $stmt->fetch();
+            if ($user && $user['email'] === 'app@importemelhor.com.br') {
+                return true;
+            }
+
+            // Verifica permissão normal
             $stmt = $this->db->prepare("SELECT sp_check_user_permission(?, ?)");
             $stmt->execute([$user_id, $permission]);
             $result = $stmt->fetch();
@@ -442,8 +451,8 @@ class Auth {
     public function createRole($name, $slug, $description, $permissions) {
         try {
             $stmt = $this->db->prepare("
-                INSERT INTO user_roles (name, slug, description, is_admin, can_manage_users, can_manage_banners, can_manage_apps, can_access_external_sites)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO user_roles (name, slug, description, is_admin, can_manage_users, can_manage_banners, can_manage_apps, can_access_external_sites, can_access_chat)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 RETURNING *
             ");
             $stmt->execute([
@@ -454,7 +463,8 @@ class Auth {
                 $permissions['can_manage_users'] ?? false,
                 $permissions['can_manage_banners'] ?? false,
                 $permissions['can_manage_apps'] ?? false,
-                $permissions['can_access_external_sites'] ?? false
+                $permissions['can_access_external_sites'] ?? false,
+                $permissions['can_access_chat'] ?? true
             ]);
             return $stmt->fetch();
         } catch (PDOException $e) {
@@ -467,7 +477,7 @@ class Auth {
         try {
             $stmt = $this->db->prepare("
                 UPDATE user_roles
-                SET name = ?, description = ?, is_admin = ?, can_manage_users = ?, can_manage_banners = ?, can_manage_apps = ?, can_access_external_sites = ?
+                SET name = ?, description = ?, is_admin = ?, can_manage_users = ?, can_manage_banners = ?, can_manage_apps = ?, can_access_external_sites = ?, can_access_chat = ?
                 WHERE id = ?
                 RETURNING *
             ");
@@ -479,6 +489,7 @@ class Auth {
                 $permissions['can_manage_banners'] ?? false,
                 $permissions['can_manage_apps'] ?? false,
                 $permissions['can_access_external_sites'] ?? false,
+                $permissions['can_access_chat'] ?? true,
                 $role_id
             ]);
             return $stmt->fetch();

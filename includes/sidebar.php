@@ -32,19 +32,23 @@
                 <span class="menu-badge"><?php echo count($applications ?? []); ?></span>
             </a>
 
+            <?php
+            // Only show chat if user has permission
+            if (isset($auth) && isset($session) && $auth->checkPermission($session['user_id'], 'access_chat')):
+            ?>
             <a href="/chat.php" class="menu-item <?php echo (basename($_SERVER['PHP_SELF']) === 'chat.php') ? 'active' : ''; ?>">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                 </svg>
                 <span>Chat</span>
                 <?php
-                if (isset($auth) && isset($session)) {
-                    $unreadChats = $auth->getTotalUnreadMessagesCount($session['user_id']);
-                    if ($unreadChats > 0):
+                $unreadChats = $auth->getTotalUnreadMessagesCount($session['user_id']);
+                if ($unreadChats > 0):
                 ?>
                 <span class="menu-badge"><?php echo $unreadChats; ?></span>
-                <?php endif; } ?>
+                <?php endif; ?>
             </a>
+            <?php endif; ?>
         </div>
 
         <?php
@@ -96,6 +100,15 @@
                     <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
                 </svg>
                 <span>Sites IM</span>
+            </a>
+
+            <a href="/admin/analytics.php" class="menu-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21.21 15.89A10 10 0 1 1 8 2.83"/>
+                    <path d="M22 12A10 10 0 0 0 12 2v10z"/>
+                </svg>
+                <span>Analytics</span>
+                <span style="margin-left: auto; padding: 0.125rem 0.5rem; background: var(--color-warning); color: white; border-radius: 9999px; font-size: 0.625rem; font-weight: 700;">EM BREVE</span>
             </a>
         </div>
         <?php endif; ?>
