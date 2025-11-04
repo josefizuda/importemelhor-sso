@@ -71,6 +71,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $message = $result ? 'Usuário atualizado com sucesso!' : 'Erro ao atualizar usuário.';
                 $messageType = $result ? 'success' : 'error';
                 break;
+
+            case 'update_chat_permission':
+                $permission_value = $_POST['permission_value'];
+                // Convert string to proper value: 'default' => null, 'true' => true, 'false' => false
+                if ($permission_value === 'default') {
+                    $permission_value = null;
+                } else {
+                    $permission_value = ($permission_value === 'true');
+                }
+                $result = $auth->updateUserChatPermission((int)$_POST['user_id'], $permission_value);
+                $message = $result ? 'Permissão de chat atualizada com sucesso!' : 'Erro ao atualizar permissão.';
+                $messageType = $result ? 'success' : 'error';
+                break;
         }
     }
 }
@@ -186,6 +199,7 @@ $allApps = $stmt->fetchAll();
                                 <th>Email</th>
                                 <th>Departamento</th>
                                 <th>Apps</th>
+                                <th>Chat</th>
                                 <th>Último Acesso</th>
                                 <th>Status</th>
                                 <th>Ações</th>
@@ -215,6 +229,20 @@ $allApps = $stmt->fetchAll();
                                     <span style="padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; background: var(--color-gray-200); color: var(--color-gray-700);">
                                         <?php echo $user['apps_count']; ?> apps
                                     </span>
+                                </td>
+                                <td>
+                                    <?php
+                                    $chatPerm = $user['can_access_chat'] ?? null;
+                                    if ($user['email'] === 'app@importemelhor.com.br') {
+                                        echo '<span style="padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; background: var(--color-primary); color: white;">Admin</span>';
+                                    } elseif ($chatPerm === null) {
+                                        echo '<span style="padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; background: var(--color-gray-300); color: var(--color-gray-700);" title="Usando permissão da role">Padrão</span>';
+                                    } elseif ($chatPerm) {
+                                        echo '<span style="padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; background: var(--color-success); color: white;">Habilitado</span>';
+                                    } else {
+                                        echo '<span style="padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; background: var(--color-error); color: white;">Desabilitado</span>';
+                                    }
+                                    ?>
                                 </td>
                                 <td style="font-size: 0.875rem;">
                                     <?php echo $user['last_login'] ? date('d/m/Y H:i', strtotime($user['last_login'])) : 'Nunca'; ?>
@@ -342,11 +370,61 @@ $allApps = $stmt->fetchAll();
             document.getElementById('modalSubtitle').textContent = userName;
             document.getElementById('permissionsModal').style.display = 'flex';
 
+            // Fetch user data first
+            const userResponse = await fetch(`/admin/get_user_data.php?user_id=${userId}`);
+            const userData = await userResponse.json();
+
             // Fetch user permissions
             const response = await fetch(`/admin/get_user_permissions.php?user_id=${userId}`);
             const data = await response.json();
 
-            let html = '<div class="grid grid-cols-1" style="gap: 1rem;">';
+            let html = '';
+
+            // Add Chat Permission Control
+            html += `
+                <div style="padding: 1.5rem; background: var(--color-gray-50); border-radius: var(--radius); margin-bottom: 1.5rem;">
+                    <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                        </svg>
+                        Acesso ao Chat
+                    </h3>
+                    <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                        Controle o acesso individual do usuário ao sistema de chat. "Padrão" usa a permissão da role do usuário.
+                    </p>
+                    <form method="POST" id="chatPermissionForm${userId}">
+                        <input type="hidden" name="action" value="update_chat_permission">
+                        <input type="hidden" name="user_id" value="${userId}">
+                        <div style="display: flex; gap: 0.75rem;">
+                            <label style="flex: 1; padding: 0.75rem; border: 2px solid var(--border-color); border-radius: var(--radius); cursor: pointer; transition: var(--transition);" class="chat-perm-option">
+                                <input type="radio" name="permission_value" value="default" ${userData.can_access_chat === null ? 'checked' : ''} style="margin-right: 0.5rem;">
+                                <span style="font-weight: 600;">Padrão</span>
+                                <br>
+                                <small style="color: var(--text-secondary);">Usa role</small>
+                            </label>
+                            <label style="flex: 1; padding: 0.75rem; border: 2px solid var(--border-color); border-radius: var(--radius); cursor: pointer; transition: var(--transition);" class="chat-perm-option">
+                                <input type="radio" name="permission_value" value="true" ${userData.can_access_chat === true ? 'checked' : ''} style="margin-right: 0.5rem;">
+                                <span style="font-weight: 600;">Habilitado</span>
+                                <br>
+                                <small style="color: var(--text-secondary);">Sempre ativo</small>
+                            </label>
+                            <label style="flex: 1; padding: 0.75rem; border: 2px solid var(--border-color); border-radius: var(--radius); cursor: pointer; transition: var(--transition);" class="chat-perm-option">
+                                <input type="radio" name="permission_value" value="false" ${userData.can_access_chat === false ? 'checked' : ''} style="margin-right: 0.5rem;">
+                                <span style="font-weight: 600;">Desabilitado</span>
+                                <br>
+                                <small style="color: var(--text-secondary);">Sempre bloqueado</small>
+                            </label>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="margin-top: 1rem; width: 100%;">
+                            Atualizar Permissão de Chat
+                        </button>
+                    </form>
+                </div>
+
+                <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 1rem;">Permissões de Aplicações</h3>
+            `;
+
+            html += '<div class="grid grid-cols-1" style="gap: 1rem;">';
 
             data.forEach(app => {
                 html += `

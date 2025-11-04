@@ -328,6 +328,23 @@ class Auth {
         }
     }
 
+    public function updateUserChatPermission($user_id, $can_access_chat) {
+        try {
+            // $can_access_chat can be: null (use role), true (force enable), false (force disable)
+            $stmt = $this->db->prepare("
+                UPDATE users
+                SET can_access_chat = ?
+                WHERE id = ?
+                RETURNING can_access_chat
+            ");
+            $stmt->execute([$can_access_chat, $user_id]);
+            return $stmt->fetch();
+        } catch (PDOException $e) {
+            error_log("Error updating user chat permission: " . $e->getMessage());
+            return false;
+        }
+    }
+
     public function getUserAppAccess($user_id) {
         try {
             $stmt = $this->db->prepare("
@@ -430,14 +447,22 @@ class Auth {
     public function checkPermission($user_id, $permission) {
         try {
             // Admin principal sempre tem acesso a tudo
-            $stmt = $this->db->prepare("SELECT email FROM users WHERE id = ?");
+            $stmt = $this->db->prepare("SELECT email, can_access_chat FROM users WHERE id = ?");
             $stmt->execute([$user_id]);
             $user = $stmt->fetch();
             if ($user && $user['email'] === 'app@importemelhor.com.br') {
                 return true;
             }
 
-            // Verifica permissão normal
+            // Check for user-specific chat permission override
+            if ($permission === 'access_chat' && $user) {
+                // If user has specific override (not NULL), use it
+                if ($user['can_access_chat'] !== null) {
+                    return (bool)$user['can_access_chat'];
+                }
+            }
+
+            // Verifica permissão normal da role
             $stmt = $this->db->prepare("SELECT sp_check_user_permission(?, ?)");
             $stmt->execute([$user_id, $permission]);
             $result = $stmt->fetch();

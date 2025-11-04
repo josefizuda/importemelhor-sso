@@ -34,14 +34,24 @@ $conversation_id = isset($_GET['c']) ? (int)$_GET['c'] : null;
 // Handle new conversation
 if (isset($_GET['user']) && !$conversation_id) {
     $other_user_id = (int)$_GET['user'];
+
+    // Log attempt
+    error_log("Chat: User {$session['user_id']} attempting to create conversation with user {$other_user_id}");
+
     $conversation_id = $auth->getOrCreateConversation($session['user_id'], $other_user_id);
 
     if ($conversation_id) {
+        error_log("Chat: Conversation {$conversation_id} created/found successfully");
         header('Location: /chat.php?c=' . $conversation_id);
         exit;
     } else {
         // Error creating conversation - show error message
-        $error_message = "Não foi possível criar a conversa. Verifique se as tabelas do chat foram criadas: <a href='/check_chat_setup.php'>Verificar Configuração</a>";
+        error_log("Chat: Failed to create conversation between {$session['user_id']} and {$other_user_id}");
+        $error_message = "Não foi possível criar a conversa. <strong>Possíveis causas:</strong><br>
+            1. As tabelas do chat não foram criadas no banco de dados<br>
+            2. Erro de permissão no banco de dados<br>
+            <br>
+            <a href='/check_chat_setup.php' style='color: #0423b2; text-decoration: underline;'>Clique aqui para verificar a configuração do chat</a>";
     }
 }
 
