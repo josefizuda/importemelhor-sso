@@ -1,3 +1,22 @@
+<?php
+require_once 'config.php';
+
+if (!isset($_COOKIE['sso_token'])) {
+    header('Location: /index.php');
+    exit;
+}
+
+$auth = new Auth();
+$session = $auth->validateSession($_COOKIE['sso_token']);
+
+if (!$session) {
+    header('Location: /index.php');
+    exit;
+}
+
+$db = Database::getInstance()->getConnection();
+$isAdmin = $auth->isAdmin($session['user_id']);
+?>
 <!DOCTYPE html>
 <html>
 <head>
@@ -23,25 +42,6 @@
 <h1>🔍 Status do Sistema - Importe Melhor SSO</h1>
 
 <?php
-require_once 'config.php';
-
-if (!isset($_COOKIE['sso_token'])) {
-    echo "<div class='card error'>Por favor, faça login primeiro.</div>";
-    echo "<a href='/index.php' class='btn'>Ir para Login</a>";
-    exit;
-}
-
-$auth = new Auth();
-$session = $auth->validateSession($_COOKIE['sso_token']);
-
-if (!$session) {
-    echo "<div class='card error'>Sessão inválida.</div>";
-    exit;
-}
-
-$db = Database::getInstance()->getConnection();
-$isAdmin = $auth->isAdmin($session['user_id']);
-
 echo "<div class='card'>";
 echo "<p><strong>Usuário:</strong> " . htmlspecialchars($session['name']) . " (" . htmlspecialchars($session['email']) . ")</p>";
 echo "<p><strong>Admin:</strong> " . ($isAdmin ? 'Sim' : 'Não') . "</p>";

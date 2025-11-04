@@ -125,6 +125,55 @@ $pageTitle = 'Configurações';
                             </a>
                         </div>
                     </div>
+
+                    <?php if ($isAdmin): ?>
+                    <!-- Integrações (apenas admin) -->
+                    <div class="card">
+                        <h2 class="card-title">🔗 Integrações</h2>
+                        <div class="card-body">
+                            <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
+                                Configure integrações com serviços externos (Google Analytics, Facebook Pixel, Google Ads, reCAPTCHA)
+                            </p>
+                            <?php
+                            // Check if integrations table exists
+                            $db = Database::getInstance()->getConnection();
+                            try {
+                                $stmt = $db->query("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'system_settings')");
+                                $table_exists = $stmt->fetch()['exists'];
+
+                                if ($table_exists) {
+                                    $stmt = $db->query("SELECT COUNT(*) as count FROM system_settings");
+                                    $count = $stmt->fetch()['count'];
+
+                                    if ($count > 0) {
+                                        echo '<div style="background: #d4edda; color: #155724; padding: 1rem; border-radius: 4px; border-left: 4px solid #28a745; margin-bottom: 1rem;">';
+                                        echo '<strong>✓ Tabela de integrações configurada!</strong><br>';
+                                        echo 'Total de configurações: ' . $count;
+                                        echo '</div>';
+                                        echo '<a href="/admin/integrations.php" class="btn btn-primary">Gerenciar Integrações</a>';
+                                    } else {
+                                        echo '<div style="background: #fff3cd; color: #856404; padding: 1rem; border-radius: 4px; border-left: 4px solid #ffc107; margin-bottom: 1rem;">';
+                                        echo '<strong>⚠️ Tabela existe mas está vazia</strong><br>';
+                                        echo 'Execute a migração para criar as configurações padrão.';
+                                        echo '</div>';
+                                        echo '<a href="/database/run_migration.php?type=integrations" class="btn btn-primary">Executar Migração de Integrações</a>';
+                                    }
+                                } else {
+                                    echo '<div style="background: #f8d7da; color: #721c24; padding: 1rem; border-radius: 4px; border-left: 4px solid #dc3545; margin-bottom: 1rem;">';
+                                    echo '<strong>✗ Tabela de integrações não existe</strong><br>';
+                                    echo 'Execute a migração para criar a estrutura necessária.';
+                                    echo '</div>';
+                                    echo '<a href="/database/run_migration.php?type=integrations" class="btn" style="background: #dc3545; color: white;">Criar Tabela de Integrações</a>';
+                                }
+                            } catch (PDOException $e) {
+                                echo '<div style="background: #f8d7da; color: #721c24; padding: 1rem; border-radius: 4px; border-left: 4px solid #dc3545;">';
+                                echo '<strong>Erro ao verificar integrações:</strong> ' . htmlspecialchars($e->getMessage());
+                                echo '</div>';
+                            }
+                            ?>
+                        </div>
+                    </div>
+                    <?php endif; ?>
                 </div>
             </main>
         </div>
