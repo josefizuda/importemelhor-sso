@@ -839,4 +839,101 @@ class Auth {
             return false;
         }
     }
+
+    // System Settings Management
+    public function getSetting($key, $default = null) {
+        try {
+            $stmt = $this->db->prepare("SELECT setting_value, setting_type FROM system_settings WHERE setting_key = ?");
+            $stmt->execute([$key]);
+            $result = $stmt->fetch();
+
+            if (!$result) {
+                return $default;
+            }
+
+            // Convert value based on type
+            $value = $result['setting_value'];
+            $type = $result['setting_type'];
+
+            switch ($type) {
+                case 'boolean':
+                    return filter_var($value, FILTER_VALIDATE_BOOLEAN);
+                case 'number':
+                    return is_numeric($value) ? (float)$value : $default;
+                case 'json':
+                    return json_decode($value, true);
+                default:
+                    return $value;
+            }
+        } catch (PDOException $e) {
+            error_log("Error getting setting: " . $e->getMessage());
+            return $default;
+        }
+    }
+
+    public function setSetting($key, $value, $user_id) {
+        try {
+            // Get setting type
+            $stmt = $this->db->prepare("SELECT setting_type FROM system_settings WHERE setting_key = ?");
+            $stmt->execute([$key]);
+            $result = $stmt->fetch();
+
+            if (!$result) {
+                return false;
+            }
+
+            $type = $result['setting_type'];
+
+            // Convert value to string based on type
+            if ($type === 'json') {
+                $value = json_encode($value);
+            } elseif ($type === 'boolean') {
+                $value = $value ? 'true' : 'false';
+            } else {
+                $value = (string)$value;
+            }
+
+            $stmt = $this->db->prepare("
+                UPDATE system_settings
+                SET setting_value = ?, updated_at = CURRENT_TIMESTAMP, updated_by = ?
+                WHERE setting_key = ?
+            ");
+            $stmt->execute([$value, $user_id, $key]);
+            return true;
+        } catch (PDOException $e) {
+            error_log("Error setting config: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function getAllSettings() {
+        try {
+            $stmt = $this->db->query("SELECT * FROM system_settings ORDER BY setting_key");
+            $settings = $stmt->fetchAll();
+
+            // Convert values based on type and mask sensitive data
+            foreach ($settings as &$setting) {
+                if ($setting['is_sensitive'] && $setting['setting_value']) {
+                    $setting['setting_value'] = '••••••••';
+                } else {
+                    switch ($setting['setting_type']) {
+                        case 'boolean':
+                            $setting['setting_value'] = filter_var($setting['setting_value'], FILTER_VALIDATE_BOOLEAN);
+                            break;
+                        case 'number':
+                            $setting['setting_value'] = is_numeric($setting['setting_value']) ? (float)$setting['setting_value'] : null;
+                            break;
+                        case 'json':
+                            $setting['setting_value'] = json_decode($setting['setting_value'], true);
+                            break;
+                    }
+                }
+            }
+
+            return $settings;
+        } catch (PDOException $e) {
+            error_log("Error getting all settings: " . $e->getMessage());
+            return [];
+        }
+    }
 }
