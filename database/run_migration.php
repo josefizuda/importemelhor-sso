@@ -60,11 +60,22 @@ $migrations = [
         'items' => [
             'can_access_chat column in user_roles table'
         ]
+    ],
+    'integrations' => [
+        'file' => 'integrations_settings.sql',
+        'name' => 'System Integrations',
+        'items' => [
+            'system_settings table',
+            'Google Analytics 4 settings',
+            'Facebook Pixel settings',
+            'Google Ads settings',
+            'reCAPTCHA settings'
+        ]
     ]
 ];
 
 if (!isset($migrations[$migration])) {
-    die('Invalid migration type. Use: ?type=notifications, ?type=chat, or ?type=chat_permission');
+    die('Invalid migration type. Use: ?type=notifications, ?type=chat, ?type=chat_permission, or ?type=integrations');
 }
 
 $config = $migrations[$migration];
@@ -92,12 +103,14 @@ try {
 echo "</pre>";
 echo '<h3>Available Migrations:</h3>';
 echo '<div style="margin-bottom: 2rem;">';
-echo '<a href="?type=notifications" style="margin-right: 1rem; margin-bottom: 0.5rem; padding: 0.75rem 1.5rem; background: #0423b2; color: white; text-decoration: none; border-radius: 4px; display: inline-block;">📢 Run Notifications Migration</a>';
-echo '<a href="?type=chat" style="margin-right: 1rem; margin-bottom: 0.5rem; padding: 0.75rem 1.5rem; background: #0423b2; color: white; text-decoration: none; border-radius: 4px; display: inline-block;">💬 Run Chat System Migration</a>';
-echo '<a href="?type=chat_permission" style="margin-right: 1rem; margin-bottom: 0.5rem; padding: 0.75rem 1.5rem; background: #0423b2; color: white; text-decoration: none; border-radius: 4px; display: inline-block;">🔐 Add Chat Permission</a>';
+echo '<a href="?type=notifications" style="margin-right: 1rem; margin-bottom: 0.5rem; padding: 0.75rem 1.5rem; background: #0423b2; color: white; text-decoration: none; border-radius: 4px; display: inline-block;">📢 Notifications</a>';
+echo '<a href="?type=chat" style="margin-right: 1rem; margin-bottom: 0.5rem; padding: 0.75rem 1.5rem; background: #0423b2; color: white; text-decoration: none; border-radius: 4px; display: inline-block;">💬 Chat System</a>';
+echo '<a href="?type=chat_permission" style="margin-right: 1rem; margin-bottom: 0.5rem; padding: 0.75rem 1.5rem; background: #0423b2; color: white; text-decoration: none; border-radius: 4px; display: inline-block;">🔐 Chat Permission</a>';
+echo '<a href="?type=integrations" style="margin-right: 1rem; margin-bottom: 0.5rem; padding: 0.75rem 1.5rem; background: #28a745; color: white; text-decoration: none; border-radius: 4px; display: inline-block;">🔗 Integrations</a>';
 echo '</div>';
 echo '<h3>Quick Links:</h3>';
-echo '<a href="/check_chat_setup.php" style="margin-right: 1rem; padding: 0.5rem 1rem; background: #28a745; color: white; text-decoration: none; border-radius: 4px; display: inline-block;">✓ Check Chat Setup</a>';
-echo '<a href="/notifications.php" style="margin-right: 1rem;">Go to Notifications</a>';
-echo '<a href="/chat.php">Go to Chat</a>';
+echo '<a href="/system_status.php" style="margin-right: 1rem; padding: 0.5rem 1rem; background: #ffc107; color: #333; font-weight: bold; text-decoration: none; border-radius: 4px; display: inline-block;">🔍 System Status</a>';
+echo '<a href="/database/auto_fix_chat.php" style="margin-right: 1rem; padding: 0.5rem 1rem; background: #dc3545; color: white; text-decoration: none; border-radius: 4px; display: inline-block;">🔧 Auto-Fix Chat</a>';
+echo '<a href="/chat.php" style="margin-right: 1rem;">Go to Chat</a>';
+echo '<a href="/dashboard.php">Go to Dashboard</a>';
 ?>
