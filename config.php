@@ -328,6 +328,23 @@ class Auth {
         }
     }
 
+    public function updateUserChatPermission($user_id, $can_access_chat) {
+        try {
+            // $can_access_chat can be: null (use role), true (force enable), false (force disable)
+            $stmt = $this->db->prepare("
+                UPDATE users
+                SET can_access_chat = ?
+                WHERE id = ?
+                RETURNING can_access_chat
+            ");
+            $stmt->execute([$can_access_chat, $user_id]);
+            return $stmt->fetch();
+        } catch (PDOException $e) {
+            error_log("Error updating user chat permission: " . $e->getMessage());
+            return false;
+        }
+    }
+
     public function getUserAppAccess($user_id) {
         try {
             $stmt = $this->db->prepare("
@@ -430,14 +447,22 @@ class Auth {
     public function checkPermission($user_id, $permission) {
         try {
             // Admin principal sempre tem acesso a tudo
-            $stmt = $this->db->prepare("SELECT email FROM users WHERE id = ?");
+            $stmt = $this->db->prepare("SELECT email, can_access_chat FROM users WHERE id = ?");
             $stmt->execute([$user_id]);
             $user = $stmt->fetch();
             if ($user && $user['email'] === 'app@importemelhor.com.br') {
                 return true;
             }
 
-            // Verifica permissão normal
+            // Check for user-specific chat permission override
+            if ($permission === 'access_chat' && $user) {
+                // If user has specific override (not NULL), use it
+                if ($user['can_access_chat'] !== null) {
+                    return (bool)$user['can_access_chat'];
+                }
+            }
+
+            // Verifica permissão normal da role
             $stmt = $this->db->prepare("SELECT sp_check_user_permission(?, ?)");
             $stmt->execute([$user_id, $permission]);
             $result = $stmt->fetch();
@@ -812,6 +837,103 @@ class Auth {
         } catch (PDOException $e) {
             error_log("Error checking conversation participant: " . $e->getMessage());
             return false;
+        }
+    }
+
+    // System Settings Management
+    public function getSetting($key, $default = null) {
+        try {
+            $stmt = $this->db->prepare("SELECT setting_value, setting_type FROM system_settings WHERE setting_key = ?");
+            $stmt->execute([$key]);
+            $result = $stmt->fetch();
+
+            if (!$result) {
+                return $default;
+            }
+
+            // Convert value based on type
+            $value = $result['setting_value'];
+            $type = $result['setting_type'];
+
+            switch ($type) {
+                case 'boolean':
+                    return filter_var($value, FILTER_VALIDATE_BOOLEAN);
+                case 'number':
+                    return is_numeric($value) ? (float)$value : $default;
+                case 'json':
+                    return json_decode($value, true);
+                default:
+                    return $value;
+            }
+        } catch (PDOException $e) {
+            error_log("Error getting setting: " . $e->getMessage());
+            return $default;
+        }
+    }
+
+    public function setSetting($key, $value, $user_id) {
+        try {
+            // Get setting type
+            $stmt = $this->db->prepare("SELECT setting_type FROM system_settings WHERE setting_key = ?");
+            $stmt->execute([$key]);
+            $result = $stmt->fetch();
+
+            if (!$result) {
+                return false;
+            }
+
+            $type = $result['setting_type'];
+
+            // Convert value to string based on type
+            if ($type === 'json') {
+                $value = json_encode($value);
+            } elseif ($type === 'boolean') {
+                $value = $value ? 'true' : 'false';
+            } else {
+                $value = (string)$value;
+            }
+
+            $stmt = $this->db->prepare("
+                UPDATE system_settings
+                SET setting_value = ?, updated_at = CURRENT_TIMESTAMP, updated_by = ?
+                WHERE setting_key = ?
+            ");
+            $stmt->execute([$value, $user_id, $key]);
+            return true;
+        } catch (PDOException $e) {
+            error_log("Error setting config: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function getAllSettings() {
+        try {
+            $stmt = $this->db->query("SELECT * FROM system_settings ORDER BY setting_key");
+            $settings = $stmt->fetchAll();
+
+            // Convert values based on type and mask sensitive data
+            foreach ($settings as &$setting) {
+                if ($setting['is_sensitive'] && $setting['setting_value']) {
+                    $setting['setting_value'] = '••••••••';
+                } else {
+                    switch ($setting['setting_type']) {
+                        case 'boolean':
+                            $setting['setting_value'] = filter_var($setting['setting_value'], FILTER_VALIDATE_BOOLEAN);
+                            break;
+                        case 'number':
+                            $setting['setting_value'] = is_numeric($setting['setting_value']) ? (float)$setting['setting_value'] : null;
+                            break;
+                        case 'json':
+                            $setting['setting_value'] = json_decode($setting['setting_value'], true);
+                            break;
+                    }
+                }
+            }
+
+            return $settings;
+        } catch (PDOException $e) {
+            error_log("Error getting all settings: " . $e->getMessage());
+            return [];
         }
     }
 }
