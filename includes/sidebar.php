@@ -7,6 +7,11 @@
                  class="logo-img-real"
                  style="max-width: 180px; height: auto;">
         </a>
+        <button class="sidebar-toggle-btn" id="sidebarToggleBtn" title="Recolher menu">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M15 18l-6-6 6-6"/>
+            </svg>
+        </button>
     </div>
 
     <nav class="sidebar-menu">
@@ -108,7 +113,6 @@
                     <path d="M22 12A10 10 0 0 0 12 2v10z"/>
                 </svg>
                 <span>Analytics</span>
-                <span style="margin-left: auto; padding: 0.125rem 0.5rem; background: var(--color-warning); color: white; border-radius: 9999px; font-size: 0.625rem; font-weight: 700;">EM BREVE</span>
             </a>
         </div>
         <?php endif; ?>
@@ -143,6 +147,7 @@
 // Mobile menu toggle
 const mobileMenuToggle = document.getElementById('mobileMenuToggle');
 const sidebar = document.getElementById('sidebar');
+const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
 
 if (mobileMenuToggle) {
     mobileMenuToggle.addEventListener('click', () => {
@@ -150,10 +155,36 @@ if (mobileMenuToggle) {
     });
 }
 
+// Desktop sidebar toggle with localStorage
+if (sidebarToggleBtn) {
+    // Load saved state
+    const savedSidebarState = localStorage.getItem('sidebarCollapsed');
+    if (savedSidebarState === 'true') {
+        sidebar.classList.add('collapsed');
+        document.body.classList.add('sidebar-collapsed');
+    }
+
+    // Toggle on click
+    sidebarToggleBtn.addEventListener('click', () => {
+        sidebar.classList.toggle('collapsed');
+        const isCollapsed = sidebar.classList.contains('collapsed');
+
+        // Update body class
+        if (isCollapsed) {
+            document.body.classList.add('sidebar-collapsed');
+        } else {
+            document.body.classList.remove('sidebar-collapsed');
+        }
+
+        // Save state
+        localStorage.setItem('sidebarCollapsed', isCollapsed);
+    });
+}
+
 // Close sidebar when clicking outside on mobile
 document.addEventListener('click', (e) => {
     if (window.innerWidth <= 1024) {
-        if (!sidebar.contains(e.target) && !mobileMenuToggle.contains(e.target)) {
+        if (!sidebar.contains(e.target) && mobileMenuToggle && !mobileMenuToggle.contains(e.target)) {
             sidebar.classList.remove('active');
         }
     }
