@@ -253,6 +253,7 @@ a:hover {
     height: 70px;
     display: flex;
     align-items: center;
+    justify-content: space-between;
     padding: 0 1.5rem;
     border-bottom: 1px solid var(--color-gray-200);
 }
@@ -364,6 +365,90 @@ a:hover {
 .logout-btn:hover {
     background: var(--color-error);
     color: var(--color-white);
+}
+
+/* Sidebar Toggle Button */
+.sidebar-toggle-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-primary);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: var(--transition);
+    color: var(--color-gray-600);
+    flex-shrink: 0;
+}
+
+.sidebar-toggle-btn:hover {
+    background: var(--color-gray-50);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+.sidebar-toggle-btn svg {
+    transition: transform 0.3s ease;
+}
+
+/* Sidebar Collapsed State */
+.sidebar.collapsed {
+    width: 80px;
+}
+
+.sidebar.collapsed .sidebar-header {
+    padding: 0 1rem;
+    justify-content: center;
+}
+
+.sidebar.collapsed .logo-wrapper {
+    display: none;
+}
+
+.sidebar.collapsed .sidebar-toggle-btn svg {
+    transform: rotate(180deg);
+}
+
+.sidebar.collapsed .menu-section-title {
+    display: none;
+}
+
+.sidebar.collapsed .menu-item {
+    justify-content: center;
+    padding: 0.75rem;
+}
+
+.sidebar.collapsed .menu-item span {
+    display: none;
+}
+
+.sidebar.collapsed .menu-badge {
+    display: none;
+}
+
+.sidebar.collapsed .sidebar-footer {
+    padding: 0.5rem;
+}
+
+.sidebar.collapsed .logout-btn span {
+    display: none;
+}
+
+.sidebar.collapsed .logout-btn {
+    justify-content: center;
+    padding: 0.75rem;
+}
+
+/* Adjust main content when sidebar is collapsed */
+body.sidebar-collapsed .main-content {
+    margin-left: 80px;
+    width: calc(100% - 80px);
+}
+
+body.sidebar-collapsed .header {
+    left: 80px;
 }
 
 /* Main Content */
@@ -844,6 +929,10 @@ a:hover {
     .sidebar.mobile-open {
         transform: translateX(0);
         box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+    }
+
+    .sidebar-toggle-btn {
+        display: none;
     }
 
     .header {
