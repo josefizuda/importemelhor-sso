@@ -29,7 +29,7 @@ $error = $_GET['error'] ?? null;
 
 <div class="login-background">
     <div class="astronaut-container">
-        <img src="/public/images/backgroundv1.png" alt="Astronaut" class="astronaut-image" id="astronautImage">
+        <img src="/public/images/background.webp" alt="Astronaut" class="astronaut-image" id="astronautImage">
     </div>
 </div>
 
