@@ -353,7 +353,15 @@ $applications = $auth->getUserApplications($session['user_id']);
                         progressDiv.style.display = 'none';
                     }, 2000);
                 } else {
-                    progressDiv.textContent = 'Erro: ' + (result.error || 'Upload failed');
+                    let errorMsg = 'Erro: ' + (result.error || 'Upload failed');
+                    if (result.path) {
+                        errorMsg += '\nPath: ' + result.path;
+                    }
+                    if (result.fix_command) {
+                        errorMsg += '\nFix: ' + result.fix_command;
+                        console.log('Run this command on server:', result.fix_command);
+                    }
+                    progressDiv.innerHTML = errorMsg.replace(/\n/g, '<br>');
                     progressDiv.style.color = 'var(--color-error)';
                 }
             } catch (error) {

@@ -5,7 +5,7 @@
 }
 
 :root {
-    --astronaut-image: url('https://filesso.importemelhor.com.br/api/preview/big/etc/easypanel/projects/auth-sso/importemelhor-sso/code/public/images/background.webp?inline=true&key=1765461419959');
+    --astronaut-image: url('https://conteudo.importemelhor.com.br/wp-content/uploads/2025/12/background.webp');
 }
 
 body {
@@ -33,10 +33,10 @@ body {
 
 .astronaut-container {
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    top: -20px;
+    left: -20px;
+    right: -20px;
+    bottom: -20px;
     background-image: var(--astronaut-image);
     background-size: cover;
     background-position: center right;
@@ -79,10 +79,10 @@ body {
     z-index: 1;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     width: 100%;
     min-height: 100vh;
-    padding: 2rem;
+    padding: 2rem 2rem 2rem 10%;
 }
 
 /* Glass card effect */
@@ -95,10 +95,12 @@ body {
     box-shadow:
         0 8px 32px 0 rgba(0, 0, 0, 0.37),
         inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
-    padding: 3rem 3.5rem;
+    padding: 3rem;
     width: 100%;
-    max-width: 440px;
-    text-align: center;
+    max-width: 420px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     animation: cardAppear 0.6s ease-out;
     transition: opacity 0.4s ease, transform 0.4s ease;
 }
@@ -161,6 +163,8 @@ body {
 /* Login header */
 .login-header {
     margin-bottom: 2rem;
+    text-align: center;
+    width: 100%;
 }
 
 .login-header h2 {
@@ -173,6 +177,7 @@ body {
 .login-header p {
     color: rgba(255, 255, 255, 0.8);
     font-size: 1rem;
+    white-space: nowrap;
 }
 
 /* Alert styles */
@@ -186,6 +191,7 @@ body {
     margin-bottom: 1.5rem;
     font-size: 0.95rem;
     font-weight: 500;
+    width: 100%;
 }
 
 .alert-error {
@@ -237,6 +243,8 @@ body {
     margin-top: 1.5rem;
     font-size: 0.9rem;
     color: rgba(255, 255, 255, 0.7);
+    text-align: center;
+    width: 100%;
 }
 
 .support-link a {
@@ -252,6 +260,13 @@ body {
 }
 
 /* Responsive styles */
+@media (max-width: 1024px) {
+    .login-container {
+        justify-content: center;
+        padding: 2rem;
+    }
+}
+
 @media (max-width: 640px) {
     .login-container {
         padding: 1rem;
