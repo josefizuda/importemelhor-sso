@@ -253,6 +253,13 @@ body {
 }
 
 /* Responsive styles */
+@media (max-width: 1024px) {
+    .login-container {
+        justify-content: center;
+        padding: 2rem;
+    }
+}
+
 @media (max-width: 640px) {
     .login-container {
         padding: 1rem;
