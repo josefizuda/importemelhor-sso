@@ -34,7 +34,7 @@ $error = $_GET['error'] ?? null;
 <div class="login-container" id="loginContainer">
     <div class="glass-card" id="glassCard">
         <div class="logo-header">
-            <img src="https://conteudo.importemelhor.com.br/wp-content/uploads/2025/12/logoIMConnect.png" alt="IM Connect" class="logo-img" style="max-height: 60px;">
+            <img src="https://conteudo.importemelhor.com.br/wp-content/uploads/2025/12/logoIMConnect-V2.webp" alt="IM Connect" class="logo-img" style="max-width: 200px;">
         </div>
 
         <div class="login-header">
