@@ -34,13 +34,7 @@ $error = $_GET['error'] ?? null;
 <div class="login-container" id="loginContainer">
     <div class="glass-card" id="glassCard">
         <div class="logo-header">
-            <div class="im-logo">
-                <svg width="60" height="50" viewBox="0 0 60 50" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M5 40 Q30 5 55 40" stroke="white" stroke-width="8" fill="none" stroke-linecap="round"/>
-                </svg>
-                <span class="logo-text">IM</span>
-            </div>
-            <span class="logo-connect">Connect</span>
+            <img src="https://conteudo.importemelhor.com.br/wp-content/uploads/2025/12/logoIMConnect.png" alt="IM Connect" class="logo-img" style="max-height: 60px;">
         </div>
 
         <div class="login-header">
