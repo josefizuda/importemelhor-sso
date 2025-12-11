@@ -79,12 +79,14 @@ try {
     // Create directory if it doesn't exist
     if (!file_exists($upload_dir)) {
         if (!@mkdir($upload_dir, 0777, true)) {
+            $parent_dir = dirname($upload_dir);
             http_response_code(500);
             echo json_encode([
                 'error' => 'Failed to create upload directory',
                 'path' => $upload_dir,
-                'parent_exists' => file_exists(dirname($upload_dir)),
-                'parent_writable' => is_writable(dirname($upload_dir))
+                'parent_exists' => file_exists($parent_dir),
+                'parent_writable' => is_writable($parent_dir),
+                'fix_command' => 'sudo mkdir -p ' . escapeshellarg($upload_dir) . ' && sudo chown -R www-data:www-data ' . escapeshellarg(dirname(dirname($upload_dir))) . ' && sudo chmod -R 755 ' . escapeshellarg(dirname(dirname($upload_dir)))
             ]);
             exit;
         }
@@ -108,7 +110,8 @@ try {
         echo json_encode([
             'error' => 'Upload directory is not writable',
             'path' => $upload_dir,
-            'permissions' => substr(sprintf('%o', fileperms($upload_dir)), -4)
+            'permissions' => substr(sprintf('%o', fileperms($upload_dir)), -4),
+            'fix_command' => 'sudo chown -R www-data:www-data ' . escapeshellarg($upload_dir) . ' && sudo chmod -R 755 ' . escapeshellarg($upload_dir)
         ]);
         exit;
     }
