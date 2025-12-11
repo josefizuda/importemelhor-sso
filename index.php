@@ -19,7 +19,7 @@ $error = $_GET['error'] ?? null;
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Importe Melhor</title>
+    <title>Login - IM Connect</title>
     <link rel="stylesheet" href="/public/css/login.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -27,86 +27,74 @@ $error = $_GET['error'] ?? null;
 </head>
 <body>
 
-<div class="login-background">
-    <div class="pattern-overlay"></div>
+<div class="login-background" id="loginBackground">
+    <div class="astronaut-container" id="astronautContainer"></div>
 </div>
 
-<div class="login-container">
-    <div class="login-branding">
-        <div class="brand-content">
-            <div class="brand-logo">
-                <span class="logo-icon">🚢</span>
-            </div>
-            <h1 class="brand-title">Importe Melhor</h1>
-            <p class="brand-subtitle">Plataforma completa de gestão para importação e comércio exterior</p>
-            
-            <div class="brand-features">
-                <div class="feature-item">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                        <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                    <span>Calculadora de Armazenagem</span>
-                </div>
-                <div class="feature-item">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                        <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                    <span>Nacionalização de produtos</span>
-                </div>
-                <div class="feature-item">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                        <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                    <span>Logística integrada</span>
-                </div>
-                <div class="feature-item">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                        <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                    <span>Canton Fair Experience</span>
-                </div>
-            </div>
-            
-            <div class="brand-footer">
-                <p>Desenvolvido por <strong>Importe Melhor</strong></p>
-            </div>
-        </div>
-    </div>
-    
-    <div class="login-form-container">
-        <div class="login-form-wrapper">
-            
-            <div class="logo-header">
-                <img src="/public/images/LogoHazul.png" alt="Importe Melhor" class="header-logo-image">
-            </div>
-            
-            <div class="login-header">
-                <h2>Bem-vindo de volta! 👋</h2>
-                <p>Acesse todas as ferramentas com login único</p>
-            </div>
-            
-            <?php if ($error): ?>
-                <div class="alert alert-error">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                        <path d="M12 9V13M12 17H12.01M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                    </svg>
-                    <span><?= htmlspecialchars($error) ?></span>
-                </div>
-            <?php endif; ?>
-            
-            <a href="/sso-login.php" class="btn-microsoft">
-                <svg width="21" height="21" viewBox="0 0 21 21" fill="none">
-                    <rect width="10" height="10" fill="#F25022"/>
-                    <rect x="11" width="10" height="10" fill="#7FBA00"/>
-                    <rect y="11" width="10" height="10" fill="#00A4EF"/>
-                    <rect x="11" y="11" width="10" height="10" fill="#FFB900"/>
+<div class="login-container" id="loginContainer">
+    <div class="glass-card" id="glassCard">
+        <div class="logo-header">
+            <div class="im-logo">
+                <svg width="60" height="50" viewBox="0 0 60 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M5 40 Q30 5 55 40" stroke="white" stroke-width="8" fill="none" stroke-linecap="round"/>
                 </svg>
-                <span>Entrar com Microsoft</span>
-            </a>
-            
+                <span class="logo-text">IM</span>
+            </div>
+            <span class="logo-connect">Connect</span>
+        </div>
+
+        <div class="login-header">
+            <h2>Bem-vindo de volta! 👋</h2>
+            <p>Acesse todas as ferramentas com login único</p>
+        </div>
+
+        <?php if ($error): ?>
+            <div class="alert alert-error">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <path d="M12 9V13M12 17H12.01M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <span><?= htmlspecialchars($error) ?></span>
+            </div>
+        <?php endif; ?>
+
+        <a href="/sso-login.php" class="btn-microsoft" id="btnMicrosoft">
+            <svg width="21" height="21" viewBox="0 0 21 21" fill="none">
+                <rect width="10" height="10" fill="#F25022"/>
+                <rect x="11" width="10" height="10" fill="#7FBA00"/>
+                <rect y="11" width="10" height="10" fill="#00A4EF"/>
+                <rect x="11" y="11" width="10" height="10" fill="#FFB900"/>
+            </svg>
+            <span>Entrar com Microsoft</span>
+        </a>
+
+        <div class="support-link">
+            <span>Problemas para acessar?</span>
+            <a href="mailto:suporte@importemelhor.com.br">Fale com o suporte</a>
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const btnMicrosoft = document.getElementById('btnMicrosoft');
+    const glassCard = document.getElementById('glassCard');
+    const astronautContainer = document.getElementById('astronautContainer');
+
+    btnMicrosoft.addEventListener('click', function(e) {
+        e.preventDefault();
+
+        // Add centering animation class
+        document.body.classList.add('astronaut-centering');
+        glassCard.classList.add('card-fade-out');
+        astronautContainer.classList.add('astronaut-center');
+
+        // Wait for animation then redirect
+        setTimeout(function() {
+            window.location.href = btnMicrosoft.href;
+        }, 800);
+    });
+});
+</script>
 
 </body>
 </html>
