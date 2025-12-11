@@ -27,10 +27,8 @@ $error = $_GET['error'] ?? null;
 </head>
 <body>
 
-<div class="login-background">
-    <div class="astronaut-container">
-        <img src="/public/images/background.webp" alt="Astronaut" class="astronaut-image" id="astronautImage">
-    </div>
+<div class="login-background" id="loginBackground">
+    <div class="astronaut-container" id="astronautContainer"></div>
 </div>
 
 <div class="login-container" id="loginContainer">
@@ -79,9 +77,8 @@ $error = $_GET['error'] ?? null;
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const btnMicrosoft = document.getElementById('btnMicrosoft');
-    const astronautImage = document.getElementById('astronautImage');
     const glassCard = document.getElementById('glassCard');
-    const loginContainer = document.getElementById('loginContainer');
+    const astronautContainer = document.getElementById('astronautContainer');
 
     btnMicrosoft.addEventListener('click', function(e) {
         e.preventDefault();
@@ -89,6 +86,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Add centering animation class
         document.body.classList.add('astronaut-centering');
         glassCard.classList.add('card-fade-out');
+        astronautContainer.classList.add('astronaut-center');
 
         // Wait for animation then redirect
         setTimeout(function() {
