@@ -84,6 +84,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $message = $result ? 'Permissão de chat atualizada com sucesso!' : 'Erro ao atualizar permissão.';
                 $messageType = $result ? 'success' : 'error';
                 break;
+
+            case 'delete_user':
+                $result = $auth->deleteUser((int)$_POST['user_id']);
+                $message = $result ? 'Usuário excluído com sucesso!' : 'Erro ao excluir usuário. Não é possível excluir o admin principal.';
+                $messageType = $result ? 'success' : 'error';
+                break;
         }
     }
 }
@@ -268,6 +274,9 @@ $allApps = $stmt->fetchAll();
                                                 <?php echo $user['is_active'] ? 'Desativar' : 'Ativar'; ?>
                                             </button>
                                         </form>
+                                        <button onclick='confirmDelete(<?php echo $user['id']; ?>, "<?php echo htmlspecialchars($user['name']); ?>")' class="btn btn-outline" style="padding: 0.5rem; font-size: 0.875rem; color: var(--color-error); border-color: var(--color-error);">
+                                            Excluir
+                                        </button>
                                         <?php endif; ?>
                                     </div>
                                 </td>
@@ -341,6 +350,33 @@ $allApps = $stmt->fetchAll();
             </div>
             <div style="padding: 1.5rem; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end;">
                 <button onclick="closePermissionsModal()" class="btn btn-outline">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteConfirmModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center;">
+        <div style="background: var(--bg-primary); border-radius: var(--radius-lg); width: 90%; max-width: 500px;">
+            <div style="padding: 1.5rem; border-bottom: 1px solid var(--border-color);">
+                <h2 style="color: var(--color-error);">Confirmar Exclusão</h2>
+            </div>
+            <div style="padding: 1.5rem;">
+                <p id="deleteMessage" style="margin-bottom: 1rem; color: var(--text-secondary);"></p>
+                <div style="padding: 1rem; background: var(--color-gray-100); border-radius: var(--radius); border-left: 4px solid var(--color-error);">
+                    <strong style="color: var(--color-error);">Atenção:</strong> Esta ação não pode ser desfeita. Todos os dados do usuário serão permanentemente removidos, incluindo sessões, permissões e histórico.
+                </div>
+            </div>
+            <div style="padding: 1.5rem; border-top: 1px solid var(--border-color); display: flex; gap: 1rem; justify-content: flex-end;">
+                <button onclick="closeDeleteModal()" class="btn btn-outline">
+                    Cancelar
+                </button>
+                <form id="deleteUserForm" method="POST" style="display: inline;">
+                    <input type="hidden" name="action" value="delete_user">
+                    <input type="hidden" name="user_id" id="delete_user_id">
+                    <button type="submit" class="btn" style="background: var(--color-error); color: white;">
+                        Excluir Usuário
+                    </button>
+                </form>
             </div>
         </div>
     </div>
@@ -466,6 +502,23 @@ $allApps = $stmt->fetchAll();
         document.getElementById('permissionsModal').addEventListener('click', function(e) {
             if (e.target === this) {
                 closePermissionsModal();
+            }
+        });
+
+        function confirmDelete(userId, userName) {
+            document.getElementById('delete_user_id').value = userId;
+            document.getElementById('deleteMessage').textContent = `Tem certeza que deseja excluir o usuário "${userName}"?`;
+            document.getElementById('deleteConfirmModal').style.display = 'flex';
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteConfirmModal').style.display = 'none';
+        }
+
+        // Close delete modal when clicking outside
+        document.getElementById('deleteConfirmModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeDeleteModal();
             }
         });
     </script>

@@ -644,6 +644,26 @@ class Auth {
         }
     }
 
+    public function deleteUser($user_id) {
+        try {
+            // Prevent deletion of main admin
+            $stmt = $this->db->prepare("SELECT email FROM users WHERE id = ?");
+            $stmt->execute([$user_id]);
+            $user = $stmt->fetch();
+
+            if ($user && $user['email'] === 'app@importemelhor.com.br') {
+                return false; // Cannot delete main admin
+            }
+
+            // Delete user (cascading deletes will handle related records)
+            $stmt = $this->db->prepare("DELETE FROM users WHERE id = ?");
+            return $stmt->execute([$user_id]);
+        } catch (PDOException $e) {
+            error_log("Error deleting user: " . $e->getMessage());
+            return false;
+        }
+    }
+
     // Check if user is admin
     public function isAdmin($user_id) {
         try {
